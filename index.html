@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#7cc6a4" />
+  <title>戒賭人生｜今天不賭，就是勝利</title>
+  <style>
+    :root{
+      --bg:#f4faf7;--card:#ffffff;--primary:#5da987;--primary-dark:#3f8065;
+      --text:#21332b;--muted:#6d7d75;--line:#dce9e2;--danger:#d85f5f;
+      --warning:#e8a447;--shadow:0 12px 30px rgba(49,91,72,.10);--radius:22px;
+    }
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,"Segoe UI","Noto Sans TC",sans-serif;background:linear-gradient(180deg,#eef8f3 0%,#f9fcfa 100%);color:var(--text)}
+    button,input,textarea,select{font:inherit}.app{max-width:760px;margin:auto;min-height:100vh;padding:20px 16px 100px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.brand h1{font-size:24px;margin:0}.brand p{margin:5px 0 0;color:var(--muted);font-size:14px}.pill{background:#e0f2e9;color:var(--primary-dark);padding:8px 12px;border-radius:999px;font-size:13px;font-weight:700}
+    .hero{background:linear-gradient(145deg,#67b691,#8fd0b1);color:white;border-radius:28px;padding:26px;box-shadow:var(--shadow);position:relative;overflow:hidden}.hero:after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.15);right:-50px;top:-60px}.hero-label{opacity:.9;font-size:14px}.days{font-size:64px;font-weight:800;line-height:1;margin:10px 0}.days span{font-size:20px}.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}.hero-stat{background:rgba(255,255,255,.16);padding:14px;border-radius:18px}.hero-stat small{display:block;opacity:.85}.hero-stat strong{font-size:22px;display:block;margin-top:4px}
+    .primary-btn,.secondary-btn,.danger-btn{border:0;border-radius:16px;padding:14px 16px;font-weight:800;cursor:pointer}.primary-btn{background:var(--primary);color:#fff}.secondary-btn{background:#e8f4ee;color:var(--primary-dark)}.danger-btn{background:#fff0f0;color:var(--danger)}.wide{width:100%}.hero .primary-btn{background:white;color:var(--primary-dark);margin-top:18px}
+    .section{margin-top:20px}.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.section-title h2{font-size:18px;margin:0}.section-title span{font-size:13px;color:var(--muted)}
+    .card{background:var(--card);border:1px solid rgba(214,231,222,.8);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.quick{display:flex;flex-direction:column;gap:8px;min-height:122px;justify-content:center}.quick .icon{font-size:28px}.quick strong{font-size:16px}.quick span{font-size:13px;color:var(--muted)}
+    .progress-wrap{background:#e8f0ec;height:12px;border-radius:999px;overflow:hidden;margin:10px 0}.progress{height:100%;background:linear-gradient(90deg,#5da987,#9bd3b8);width:0}.amount-row{display:flex;justify-content:space-between;color:var(--muted);font-size:14px}
+    .quote{text-align:center;padding:24px 16px}.quote q{font-size:20px;font-weight:700;line-height:1.55}.quote p{color:var(--muted);margin-bottom:0}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}.field label{font-size:13px;color:var(--muted);font-weight:700}.field input,.field textarea,.field select{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fbfdfc;color:var(--text)}.field textarea{min-height:110px;resize:vertical}
+    .modal{position:fixed;inset:0;background:rgba(20,39,31,.48);display:none;align-items:flex-end;justify-content:center;z-index:50}.modal.open{display:flex}.sheet{background:white;width:min(760px,100%);border-radius:28px 28px 0 0;padding:24px;max-height:88vh;overflow:auto}.sheet-head{display:flex;justify-content:space-between;align-items:center}.close{border:0;background:#edf4f0;width:38px;height:38px;border-radius:50%;cursor:pointer}.timer{text-align:center;font-size:64px;font-weight:800;margin:24px 0}.breath{text-align:center;color:var(--muted);margin-bottom:20px}
+    .moods{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.mood{border:1px solid var(--line);background:white;border-radius:14px;padding:12px 6px;font-size:22px;cursor:pointer}.mood.active{border-color:var(--primary);background:#edf8f2}
+    .entries{display:flex;flex-direction:column;gap:10px}.entry{padding:13px;border:1px solid var(--line);border-radius:14px}.entry small{color:var(--muted)}
+    .nav{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;width:min(720px,calc(100% - 24px));background:rgba(255,255,255,.95);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:22px;display:grid;grid-template-columns:repeat(4,1fr);padding:8px;box-shadow:var(--shadow);z-index:20}.nav button{border:0;background:transparent;padding:9px 4px;border-radius:14px;color:var(--muted);font-size:12px;cursor:pointer}.nav button.active{background:#eaf5ef;color:var(--primary-dark);font-weight:800}.page{display:none}.page.active{display:block}.badge-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.badge{text-align:center;padding:20px 10px}.badge .medal{font-size:38px;filter:grayscale(1);opacity:.35}.badge.unlocked .medal{filter:none;opacity:1}.badge strong{display:block;margin-top:8px}
+    .notice{background:#fff7e8;border:1px solid #f2d7a7;color:#7a5a20;border-radius:16px;padding:13px;font-size:13px;line-height:1.6}
+    @media(max-width:520px){.days{font-size:54px}.grid,.form-row{grid-template-columns:1fr}.hero-grid{grid-template-columns:1fr 1fr}.badge-grid{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar"><div class="brand"><h1>戒賭人生</h1><p>今天不賭，就是今天最大的勝利。</p></div><div class="pill" id="todayText"></div></div>
+
+  <main id="home" class="page active">
+    <section class="hero">
+      <div class="hero-label">已經遠離賭博</div>
+      <div class="days"><span id="daysCount">0</span> <span>天</span></div>
+      <div>你正在把人生一點一點拿回來。</div>
+      <div class="hero-grid"><div class="hero-stat"><small>累積省下</small><strong id="savedTotal">$0</strong></div><div class="hero-stat"><small>連續簽到</small><strong id="streakCount">0 天</strong></div></div>
+      <button class="primary-btn wide" id="checkinBtn">✓ 今天不賭，完成簽到</button>
+    </section>
+
+    <section class="section"><div class="grid">
+      <button class="card quick danger-btn" onclick="openUrge()"><span class="icon">🛟</span><strong>我現在很想賭</strong><span>先停五分鐘，不做任何下注</span></button>
+      <button class="card quick secondary-btn" onclick="showPage('journal')"><span class="icon">📝</span><strong>記錄現在的心情</strong><span>找出衝動出現的原因</span></button>
+    </div></section>
+
+    <section class="section"><div class="section-title"><h2>我的目標</h2><span id="goalPercent">0%</span></div><div class="card"><strong id="goalNameText">重新開始基金</strong><div class="progress-wrap"><div class="progress" id="goalProgress"></div></div><div class="amount-row"><span id="goalCurrentText">$0</span><span id="goalTargetText">$470,000</span></div></div></section>
+    <section class="section"><div class="card quote"><q id="quoteText"></q><p>每次忍住，都是一次真正的翻本。</p></div></section>
+  </main>
+
+  <main id="finance" class="page">
+    <section class="section-title"><h2>財務與目標</h2><span>所有資料只存在此裝置</span></section>
+    <div class="card">
+      <div class="form-row"><div class="field"><label>戒賭開始日期</label><input type="date" id="startDate"></div><div class="field"><label>平均每天原本會輸多少</label><input type="number" id="dailyLoss" min="0" value="500"></div></div>
+      <div class="form-row"><div class="field"><label>目標名稱</label><input id="goalName" value="重新開始基金"></div><div class="field"><label>目標金額</label><input type="number" id="goalTarget" min="1" value="470000"></div></div>
+      <div class="field"><label>目前已存金額</label><input type="number" id="goalCurrent" min="0" value="0"></div>
+      <button class="primary-btn wide" onclick="saveSettings()">儲存設定</button>
+    </div>
+    <section class="section"><div class="card"><h3 style="margin-top:0">今天省下的錢</h3><div class="form-row"><div class="field"><label>金額</label><input type="number" id="addSaved" min="0" placeholder="例如 500"></div><div class="field"><label>&nbsp;</label><button class="secondary-btn" onclick="addSaving()">加入累積</button></div></div><div class="amount-row"><span>自訂累積</span><strong id="manualSavedText">$0</strong></div></div></section>
+    <section class="section"><div class="notice">提醒：本工具用於自我支持，不取代專業治療。若你已無法控制下注、借錢下注或因賭博感到極度絕望，請立刻聯絡信任的人並尋求專業協助。</div></section>
+  </main>
+
+  <main id="journal" class="page">
+    <section class="section-title"><h2>心情日記</h2><span>誠實記錄，不責怪自己</span></section>
+    <div class="card"><div class="field"><label>現在的心情</label><div class="moods" id="moods"><button class="mood" data-mood="很穩定">😊</button><button class="mood" data-mood="還可以">🙂</button><button class="mood" data-mood="普通">😐</button><button class="mood" data-mood="低落">😞</button><button class="mood" data-mood="很難受">😢</button></div></div><div class="field"><label>今天想賭的程度</label><select id="urgeLevel"><option>沒有</option><option>一點點</option><option>很想</option><option>差點下注</option></select></div><div class="field"><label>發生了什麼？</label><textarea id="journalText" placeholder="例如：發薪日、壓力很大、看到別人賺錢，所以突然想下注……"></textarea></div><button class="primary-btn wide" onclick="saveJournal()">儲存今天的紀錄</button></div>
+    <section class="section"><div class="section-title"><h2>最近紀錄</h2></div><div class="entries" id="entries"></div></section>
+  </main>
+
+  <main id="achievements" class="page">
+    <section class="section-title"><h2>戒賭成就</h2><span>每一天都算數</span></section>
+    <div class="badge-grid" id="badgeGrid"></div>
+    <section class="section"><div class="card"><h3 style="margin-top:0">你的戒賭理由</h3><div class="field"><textarea id="reasonText" placeholder="例如：我要還清債務、照顧家人、過回正常生活。"></textarea></div><button class="primary-btn wide" onclick="saveReason()">儲存我的理由</button></div></section>
+  </main>
+</div>
+
+<nav class="nav"><button class="active" data-page="home" onclick="showPage('home',this)">🏠<br>首頁</button><button data-page="finance" onclick="showPage('finance',this)">💰<br>財務</button><button data-page="journal" onclick="showPage('journal',this)">📝<br>日記</button><button data-page="achievements" onclick="showPage('achievements',this)">🏆<br>成就</button></nav>
+
+<div class="modal" id="urgeModal"><div class="sheet"><div class="sheet-head"><div><h2 style="margin:0">先停下來五分鐘</h2><p style="margin:6px 0;color:var(--muted)">衝動會上升，也會下降。現在先不做決定。</p></div><button class="close" onclick="closeUrge()">✕</button></div><div class="timer" id="timer">05:00</div><div class="breath" id="breathText">吸氣 4 秒，停 2 秒，慢慢吐氣 6 秒。</div><button class="secondary-btn wide" onclick="contactTrusted()">📞 聯絡一位信任的人</button><button class="primary-btn wide" style="margin-top:10px" onclick="closeUrge()">我決定今天不賭</button></div></div>
+
+<script>
+const $=id=>document.getElementById(id); const money=n=>new Intl.NumberFormat('zh-TW',{style:'currency',currency:'TWD',maximumFractionDigits:0}).format(Number(n||0));
+const store={get:(k,d)=>JSON.parse(localStorage.getItem(k)||JSON.stringify(d)),set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))};
+const today=new Date(); $('todayText').textContent=`${today.getMonth()+1}/${today.getDate()}`;
+const quotes=['想翻本，是賭局最常見的陷阱。','停止下注的那一刻，你才真正開始贏。','你不需要一次改變人生，只需要今天不賭。','輸掉的錢不需要追回來，未來的人生值得保住。','衝動不是命令，你可以看著它離開。'];
+$('quoteText').textContent=quotes[Math.floor(Math.random()*quotes.length)];
+function dateOnly(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
+function getData(){return store.get('qg_data',{startDate:new Date().toISOString().slice(0,10),dailyLoss:500,goalName:'重新開始基金',goalTarget:470000,goalCurrent:0,manualSaved:0,checkins:[],journals:[],reason:''})}
+function render(){const d=getData(); const start=dateOnly(new Date(d.startDate+'T00:00:00')); const days=Math.max(0,Math.floor((dateOnly(new Date())-start)/86400000)); const autoSaved=days*Number(d.dailyLoss||0); const total=autoSaved+Number(d.manualSaved||0); $('daysCount').textContent=days; $('savedTotal').textContent=money(total); $('streakCount').textContent=`${calcStreak(d.checkins)} 天`; const pct=Math.min(100,Math.round(Number(d.goalCurrent||0)/Math.max(1,Number(d.goalTarget||1))*100)); $('goalPercent').textContent=pct+'%'; $('goalProgress').style.width=pct+'%'; $('goalNameText').textContent=d.goalName; $('goalCurrentText').textContent=money(d.goalCurrent); $('goalTargetText').textContent=money(d.goalTarget); $('startDate').value=d.startDate;$('dailyLoss').value=d.dailyLoss;$('goalName').value=d.goalName;$('goalTarget').value=d.goalTarget;$('goalCurrent').value=d.goalCurrent;$('manualSavedText').textContent=money(d.manualSaved);$('reasonText').value=d.reason||''; const tk=new Date().toISOString().slice(0,10); const done=d.checkins.includes(tk); $('checkinBtn').textContent=done?'✓ 今天已完成簽到':'✓ 今天不賭，完成簽到'; $('checkinBtn').disabled=done; renderEntries(d.journals);renderBadges(days)}
+function calcStreak(arr){let s=0,d=new Date();for(;;){let k=d.toISOString().slice(0,10);if(arr.includes(k)){s++;d.setDate(d.getDate()-1)}else break}return s}
+$('checkinBtn').onclick=()=>{const d=getData(),k=new Date().toISOString().slice(0,10);if(!d.checkins.includes(k))d.checkins.push(k);store.set('qg_data',d);render()};
+function saveSettings(){const d=getData();d.startDate=$('startDate').value||d.startDate;d.dailyLoss=Number($('dailyLoss').value||0);d.goalName=$('goalName').value.trim()||'重新開始基金';d.goalTarget=Number($('goalTarget').value||1);d.goalCurrent=Number($('goalCurrent').value||0);store.set('qg_data',d);render();alert('設定已儲存')}
+function addSaving(){const n=Number($('addSaved').value||0);if(n<=0)return;const d=getData();d.manualSaved=Number(d.manualSaved||0)+n;store.set('qg_data',d);$('addSaved').value='';render()}
+function showPage(id,btn){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));$(id).classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===id));window.scrollTo({top:0,behavior:'smooth'})}
+let selectedMood='';document.querySelectorAll('.mood').forEach(b=>b.onclick=()=>{selectedMood=b.dataset.mood;document.querySelectorAll('.mood').forEach(x=>x.classList.remove('active'));b.classList.add('active')});
+function saveJournal(){const text=$('journalText').value.trim();if(!text&&!selectedMood)return alert('請至少選一個心情或寫下內容');const d=getData();d.journals.unshift({date:new Date().toLocaleString('zh-TW'),mood:selectedMood||'未選擇',urge:$('urgeLevel').value,text});d.journals=d.journals.slice(0,30);store.set('qg_data',d);$('journalText').value='';selectedMood='';document.querySelectorAll('.mood').forEach(x=>x.classList.remove('active'));render()}
+function renderEntries(items){$('entries').innerHTML=items.length?items.map(e=>`<div class="entry"><small>${e.date}</small><strong style="display:block;margin:5px 0">${e.mood}・衝動：${e.urge}</strong><div>${escapeHtml(e.text||'沒有文字紀錄')}</div></div>`).join(''):'<div class="card" style="color:var(--muted)">還沒有紀錄。今天可以先寫一句話。</div>'}
+function escapeHtml(s){return s.replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function renderBadges(days){const list=[[1,'🌱','第一天'],[7,'🥉','連續 7 天'],[30,'🥈','連續 30 天'],[100,'🥇','連續 100 天'],[365,'👑','完整一年'],[1000,'💎','重新掌握人生']];$('badgeGrid').innerHTML=list.map(([n,i,t])=>`<div class="card badge ${days>=n?'unlocked':''}"><div class="medal">${i}</div><strong>${t}</strong><small>${days>=n?'已解鎖':`還差 ${n-days} 天`}</small></div>`).join('')}
+function saveReason(){const d=getData();d.reason=$('reasonText').value.trim();store.set('qg_data',d);alert('你的理由已儲存。想賭時，記得回來看。')}
+let timerId,remaining=300;function openUrge(){remaining=300;$('urgeModal').classList.add('open');updateTimer();clearInterval(timerId);timerId=setInterval(()=>{remaining--;updateTimer();if(remaining<=0){clearInterval(timerId);$('breathText').textContent='你已經撐過最強烈的一段衝動。現在再等十分鐘，不下注。'}},1000)}function closeUrge(){$('urgeModal').classList.remove('open');clearInterval(timerId)}function updateTimer(){const m=String(Math.floor(remaining/60)).padStart(2,'0'),s=String(remaining%60).padStart(2,'0');$('timer').textContent=`${m}:${s}`}
+function contactTrusted(){const d=getData();alert((d.reason?`先記得你的理由：\n${d.reason}\n\n`:'')+'現在請打給一位你信任的人，直接說：「我現在很想賭，請陪我撐過十分鐘。」')}
+render();
+</script>
+</body>
+</html>
