@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Restart">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>Restart V10.1 Cloud｜重新開始</title>
+<title>Restart V10.2 Cloud｜重新開始</title>
 <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
@@ -16,7 +16,7 @@
   <div class="auth-card">
     <div class="auth-logo">🌱</div>
     <h1>Restart</h1>
-    <p class="auth-sub">登入後，下一階段會把資料安全同步到雲端。</p>
+    <p class="auth-sub">登入後，首頁設定會安全同步到雲端。</p>
     <div class="auth-tabs"><button id="loginTab" class="active" onclick="setAuthMode('login')">登入</button><button id="signupTab" onclick="setAuthMode('signup')">建立帳號</button></div>
     <div class="field"><label>Email</label><input id="authEmail" type="email" autocomplete="email" placeholder="name@example.com"></div>
     <div class="field"><label>密碼</label><input id="authPassword" type="password" autocomplete="current-password" minlength="6" placeholder="至少 6 個字元"></div>
@@ -24,7 +24,7 @@
     <div id="authMessage" class="auth-message"></div>
     <button id="authSubmit" class="btn good wide" onclick="submitAuth()">登入</button>
     <button class="auth-link" onclick="sendResetPassword()">忘記密碼？</button>
-    <p class="muted small" style="text-align:center;margin-bottom:0">目前 V10.0 只測試登入。既有 V9 資料仍保留在手機，不會被刪除。</p>
+    <p class="muted small" style="text-align:center;margin-bottom:0">V10.2 會同步首頁文字、背景、薪資預估與個人設定；既有本機資料仍會保留。</p>
   </div>
 </div>
 
@@ -98,6 +98,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="js/supabase-config.js"></script>
+<script src="js/cloud-settings.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/app.js"></script>
 </body></html>
