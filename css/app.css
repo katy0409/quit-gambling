@@ -59,13 +59,31 @@
 @media(max-width:700px){.avatar-studio{grid-template-columns:38% 62%;gap:8px;min-height:460px}.avatar-stage{min-height:440px;padding:8px;border-radius:19px}.studio-avatar{height:310px}.studio-avatar .chibi-svg.full{height:300px}.avatar-browser{max-height:500px;border-radius:19px;padding:8px}.studio-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.studio-item{padding:6px 4px}.studio-item.active{padding:5px 3px}.wardrobe-tabs button{padding:7px 10px}.purchase-bar{grid-template-columns:1fr auto}.purchase-bar>div{grid-column:1/-1}.purchase-bar .btn{padding:9px 12px}}
 @media(max-width:420px){.avatar-studio{grid-template-columns:36% 64%}.studio-avatar{height:280px}.studio-avatar .chibi-svg.full{height:270px}.avatar-stage{min-height:410px}.avatar-wallet{left:7px;top:8px;padding:5px 8px}.avatar-wallet img{width:23px;height:23px}.avatar-tap{font-size:.72rem}.studio-item span{font-size:.72rem}}
 
-/* V12.3.1 anchored layered PNG avatar preview */
+/* V12.4 layered PNG paper-doll avatar (MapleStory-style dress-up) */
 .avatar-png{position:relative;width:100%;height:100%;overflow:visible;transform-origin:50% 88%;animation:avatarV123Breath 3.2s ease-in-out infinite}
 .avatar-png-layer{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;user-select:none;-webkit-user-drag:none}
-.avatar-png .layer-hair-back{z-index:1}.avatar-png .layer-body{z-index:2}.avatar-png .layer-head{z-index:3}.avatar-png .layer-face{z-index:4}.avatar-png .layer-hair-front{z-index:5}
-/* V12.3.1: body remains full-size; head, face and hair use a shared anchor.
-   This fixes the oversized baby-head effect caused by stacking every 1024px canvas at 1:1. */
-.avatar-png .layer-head,.avatar-png .layer-face,.avatar-png .layer-hair-back,.avatar-png .layer-hair-front{transform:translate3d(0,-13.2%,0) scale(.72);transform-origin:50% 50%}
+/* z-order, back -> front. Body-canvas layers (clothes/shoes/hands) and
+   head-canvas layers (hair/face/hats) interleave so the head sits above the
+   collar and hats/hair sit above the face. */
+.avatar-png .layer-hair-back{z-index:1}
+.avatar-png .layer-body{z-index:2}
+.avatar-png .layer-bottom{z-index:3}
+.avatar-png .layer-set{z-index:4}
+.avatar-png .layer-top{z-index:5}
+.avatar-png .layer-shoes{z-index:6}
+.avatar-png .layer-hand{z-index:7}
+.avatar-png .layer-head{z-index:8}
+.avatar-png .layer-face{z-index:9}
+.avatar-png .layer-eyeshape{z-index:10}
+.avatar-png .layer-eyecolor{z-index:11}
+.avatar-png .layer-faceacc{z-index:12}
+.avatar-png .layer-hair-front{z-index:13}
+.avatar-png .layer-earrings{z-index:14}
+.avatar-png .layer-headacc{z-index:15}
+.avatar-png .layer-handheld{z-index:16}
+/* Body stays full-size; every head-worn layer shares one anchor (scaled to 72%
+   and lifted 13.2%) so the head-body ratio stays correct on any 1024px canvas. */
+.avatar-png .layer-hair-back,.avatar-png .layer-head,.avatar-png .layer-face,.avatar-png .layer-eyeshape,.avatar-png .layer-eyecolor,.avatar-png .layer-faceacc,.avatar-png .layer-hair-front,.avatar-png .layer-earrings,.avatar-png .layer-headacc{transform:translate3d(0,-13.2%,0) scale(.72);transform-origin:50% 50%}
 .avatar-png-full{width:min(330px,100%);height:360px}.avatar-png-select{height:190px;min-width:145px}.avatar-png-mini{width:56px;height:68px;animation:none}
 .avatar-png-thumb{width:100%;height:100%;animation:none}
 .avatar-png img{filter:drop-shadow(0 4px 3px rgba(0,0,0,.06))}
