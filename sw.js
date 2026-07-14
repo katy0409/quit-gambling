@@ -1,4 +1,4 @@
-const CACHE = 'restart-v12.3.4';
+const CACHE = 'restart-v12.3.5';
 const FILES = [
   './',
   'index.html',
@@ -6,12 +6,12 @@ const FILES = [
   'icon-192.png',
   'icon-512.png',
   'coin-icon.png',
-  'css/app.css?v=12.3.4',
-  'js/supabase-config.js?v=12.3.4',
-  'js/cloud-settings.js?v=12.3.4',
-  'js/auth.js?v=12.3.4',
-  'js/app.js?v=12.3.4',
-  'js/avatar-v123.js?v=12.3.4',
+  'css/app.css?v=12.3.5',
+  'js/supabase-config.js?v=12.3.5',
+  'js/cloud-settings.js?v=12.3.5',
+  'js/auth.js?v=12.3.5',
+  'js/app.js?v=12.3.5',
+  'js/avatar-v123.js?v=12.3.5',
   'assets/avatar/body/body_base.png',
   'assets/avatar/head/head_base.png',
   'assets/avatar/face/male_face_default.png',
