@@ -62,7 +62,7 @@ function openJournal(id=''){const x=state.journals.find(y=>String(y.id)===String
 function saveJournal(){const id=$('journalId').value,x={id:id||uid(),date:$('journalDate').value||today(),mood:selectedMood,urge:selectedUrge,text:$('journalText').value};if(id){const i=state.journals.findIndex(y=>String(y.id)===String(id));state.journals[i]=x}else state.journals.push(x);save();closeModal('journalModal');notify('已儲存')}
 function deleteJournal(id){if(confirm('刪除這篇日記？')){state.journals=state.journals.filter(x=>String(x.id)!==String(id));save()}}
 function renderJournals(){$('journalList').innerHTML=state.journals.length?[...state.journals].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(x=>`<div class="card"><div class="item-head"><div><strong>${MOODS.find(m=>m[0]===x.mood)?.[1]||'😐'} ${esc(x.mood)}</strong><div class="muted small">${esc(x.date)}｜想賭：${esc(x.urge)}</div></div><div class="actions"><button class="tiny edit" onclick="openJournal('${x.id}')">編輯</button><button class="tiny delete" onclick="deleteJournal('${x.id}')">刪除</button></div></div><p>${esc(x.text)}</p></div>`).join(''):'<div class="empty">尚無日記紀錄</div>'}
-async function saveSettings(){const f=$('heroPhotoInput').files[0];if(f)state.heroPhoto=await fileToData(f,1400,.78);state.heroTitle=$('heroTitleInput').value;state.heroText=$('heroTextInput').value;state.reason=$('reasonInput').value;for(const file of $('sosPhotosInput').files)state.photos.push(await fileToData(file,1200,.75));save();closeModal('settingsModal');notify('已儲存')}
+async function saveSettings(){const f=$('heroPhotoInput').files[0];if(f)state.heroPhoto=await fileToData(f,1400,.78);state.heroTitle=$('heroTitleInput').value;state.heroText=$('heroTextInput').value;state.reason=$('reasonInput').value;for(const file of $('sosPhotosInput').files)state.photos.push(await fileToData(file,1200,.75));save();try{await window.RestartCloudSettings?.save?.();notify('已儲存並同步')}catch(e){console.warn('設定雲端同步失敗',e);notify('已儲存在本機')}closeModal('settingsModal')}
 function renderSettings(){$('heroTitleInput').value=state.heroTitle||'';$('heroTextInput').value=state.heroText||'';$('reasonInput').value=state.reason||'';$('settingsPhotoGrid').innerHTML=state.photos.map((p,i)=>`<div style="position:relative"><img src="${p}"><button class="tiny delete" style="position:absolute;right:4px;top:4px" onclick="removePhoto(${i})">×</button></div>`).join('')}
 function removePhoto(i){state.photos.splice(i,1);save();renderSettings()}
 function openSOS(){renderSettings();const photos=[state.heroPhoto,...state.photos].filter(Boolean);sosIndex=0;$('sosImg').src=photos[0]||'';$('sosImg').style.display=photos.length?'block':'none';$('sosReason').textContent=state.reason||state.heroText||'先停一下，看看你一路走來已經努力了多少。';$('sosCount').textContent=photos.length?`1 / ${photos.length}`:'尚未設定照片';$('sos').classList.add('open');startTimer(300)}
@@ -78,7 +78,7 @@ function renderAnalysis(type='all',btn){document.querySelectorAll('.analysis-tab
 function forecastDefaults(kind){return{salary:0,salaryDate:''}}
 function getForecast(kind){return{...forecastDefaults(kind),...(state.forecasts?.[kind]||{})}}
 function forecastPrefix(kind){return kind==='current'?'fcCurrent':'fcNext'}
-function saveForecast(kind){const p=forecastPrefix(kind),obj={salary:Number($(p+'Salary').value||0),salaryDate:$(p+'SalaryDate').value};state.forecasts=state.forecasts||{};state.forecasts[kind]={...(state.forecasts[kind]||{}),...obj};save()}
+async function saveForecast(kind){const p=forecastPrefix(kind),obj={salary:Number($(p+'Salary').value||0),salaryDate:$(p+'SalaryDate').value};state.forecasts=state.forecasts||{};state.forecasts[kind]={...(state.forecasts[kind]||{}),...obj};save();try{await window.RestartCloudSettings?.save?.();notify('預估已同步')}catch(e){console.warn('預估同步失敗',e);notify('預估已儲存在本機')}}
 function monthKey(kind){const d=new Date();if(kind==='next')d.setMonth(d.getMonth()+1);return d.toISOString().slice(0,7)}
 function averageDailyExpense(days=30){const start=new Date();start.setDate(start.getDate()-days+1);const total=state.transactions.filter(x=>x.type==='expense'&&x.date&&new Date(x.date+'T00:00:00')>=start&&!x.systemGenerated).reduce((s,x)=>s+Number(x.amount||0),0);return total/days}
 function monthDebtDue(kind){const ym=monthKey(kind);return state.debts.filter(x=>Number(x.amount||0)>0&&x.due?.startsWith(ym)).reduce((s,x)=>s+debtCurrentRemaining(x),0)}
@@ -87,7 +87,7 @@ function forecastEnding(f,base,kind){const debt=monthDebtDue(kind),living=averag
 function renderForecasts(){['current','next'].forEach(kind=>{const p=forecastPrefix(kind),f=getForecast(kind);$(p+'Salary').value=f.salary||'';$(p+'SalaryDate').value=f.salaryDate||'';const t=totals(),base=kind==='current'?t.assets:Math.max(0,forecastEnding(getForecast('current'),t.assets,'current')),debt=monthDebtDue(kind),daily=averageDailyExpense(30),living=daily*daysInForecastMonth(kind),end=forecastEnding(f,base,kind),el=$(p+'Result'),notes=[];let cls='forecast-result';if(end<0){cls+=' bad';notes.push(`預估資金缺口 ${fmt(Math.abs(end))}`)}else if(end<Math.max(debt,living*.25)){cls+=' warn';notes.push('月底緩衝偏低，建議暫停非必要支出')}else notes.push('依目前薪資、貸款與平日支出估算，資金可維持正數');if(f.salaryDate&&kind==='current'){const salaryDays=dateDiff(f.salaryDate),beforeSalaryDebt=state.debts.filter(x=>x.amount>0&&x.due&&dateDiff(x.due)>=0&&dateDiff(x.due)<=salaryDays).reduce((s,x)=>s+debtCurrentRemaining(x),0),beforeSalaryLiving=Math.max(0,salaryDays)*daily;if(base<beforeSalaryDebt+beforeSalaryLiving)notes.push(`領薪前可能短缺 ${fmt(beforeSalaryDebt+beforeSalaryLiving-base)}`);else notes.push(`領薪前預估仍有 ${fmt(base-beforeSalaryDebt-beforeSalaryLiving)} 緩衝`)}const suggestedSaving=Math.max(0,Math.floor((end-Math.max(debt,daily*14))/100)*100);if(suggestedSaving>0)notes.push(`在保留安全緩衝後，建議最多可存 ${fmt(suggestedSaving)}`);el.className=cls;el.innerHTML=`<strong>預計月底剩餘 ${fmt(end)}</strong><div>薪資 ${fmt(f.salary)}｜本月貸款與卡費 ${fmt(debt)}｜預估生活支出 ${fmt(living)}</div><div class="small muted" style="margin-top:6px">近 30 天平均每日支出 ${fmt(daily)}；${notes.map(esc).join('；')}</div>`})}
 function buildInsights(h,t){const out=[];const lowRisk=state.journals.filter(x=>['低落','很痛苦'].includes(x.mood)&&['強烈','復賭'].includes(x.urge)).length;if(lowRisk)out.push(`你有 ${lowRisk} 次在低落或痛苦時出現強烈賭博衝動，這是目前較明顯的高風險情境。`);const m=today().slice(0,7),exp=state.transactions.filter(x=>x.type==='expense'&&x.date?.startsWith(m)).reduce((s,x)=>s+Number(x.amount||0),0),sav=state.transactions.filter(x=>x.type==='saving'&&x.date?.startsWith(m)).reduce((s,x)=>s+Number(x.amount||0),0);if(sav>0)out.push(`本月已轉入存錢目標 ${fmt(sav)}，這筆錢已視為盡量不動用的資金。`);if(exp>h.inc&&h.inc>0)out.push('本月支出高於收入，建議先暫停非必要支出並保留近期繳款金額。');if(t.cards>t.assets&&t.cards>0)out.push('信用卡卡費高於可用資產，建議優先避免新增刷卡並安排分期或還款。');if(!out.length)out.push('目前資料顯示方向穩定。持續記帳與日記後，交叉分析會更準確。');return out}
 function renderAll(){document.documentElement.style.setProperty('--bg',state.bgColor||'#f7f6f3');document.body.style.background=state.bgColor||'#f7f6f3';renderHome();renderFinance();renderLedger();renderJournals();renderSettings();renderColors()}
-function renderColors(){const colors=['#f7f6f3','#fff8f3','#f1f7f4','#f2f5fb','#f7f3fb','#fff7e8','#edf8fb','#f7f0ef','#eef3e7','#f3f0e8','#f1eff8','#fffdf5','#f9eef2','#eef7ff','#f4f1ec','#edf4ed','#fbf4ea','#f5f0fb'];$('colorOptions').innerHTML=colors.map(c=>`<button class="color-choice" style="background:${c}" onclick="setBg('${c}')" aria-label="${c}"></button>`).join('');$('customBg').value=state.bgColor||'#f7f6f3'}function setBg(c){state.bgColor=c;save()}
+function renderColors(){const colors=['#f7f6f3','#fff8f3','#f1f7f4','#f2f5fb','#f7f3fb','#fff7e8','#edf8fb','#f7f0ef','#eef3e7','#f3f0e8','#f1eff8','#fffdf5','#f9eef2','#eef7ff','#f4f1ec','#edf4ed','#fbf4ea','#f5f0fb'];$('colorOptions').innerHTML=colors.map(c=>`<button class="color-choice" style="background:${c}" onclick="setBg('${c}')" aria-label="${c}"></button>`).join('');$('customBg').value=state.bgColor||'#f7f6f3'}async function setBg(c){state.bgColor=c;save();try{await window.RestartCloudSettings?.save?.()}catch(e){console.warn('背景同步失敗',e)}}
 
 function openExcelImport(){excelPreviewData=null;$('excelImportIntro').classList.remove('hidden');$('excelImportPreview').classList.add('hidden');$('excelFile').value='';openModal('excelImportModal')}
 function cancelExcelPreview(){excelPreviewData=null;$('excelImportIntro').classList.remove('hidden');$('excelImportPreview').classList.add('hidden');$('excelFile').value=''}
@@ -170,3 +170,92 @@ function confirmExcelImport(){
   notify('匯入失敗，原資料未變更')
  }
 }
+
+// ===== V10.2 雲端設定、備份與全部重置 =====
+function freshInitialState(){
+  const base=structuredClone(D);
+  base.startDate=today();
+  return base;
+}
+
+function exportData(){
+  try{
+    const blob=new Blob([JSON.stringify({version:'10.2',exportedAt:new Date().toISOString(),data:state},null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob),a=document.createElement('a');
+    a.href=url;a.download=`restart-backup-${today()}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+    notify('備份已匯出');
+  }catch(e){console.error(e);notify('備份匯出失敗')}
+}
+
+function importData(event){
+  const file=event.target.files?.[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{try{const parsed=JSON.parse(reader.result);const incoming=parsed?.data||parsed;if(!incoming||typeof incoming!=='object')throw new Error('格式錯誤');localStorage.setItem(KEY,JSON.stringify(incoming));state=load();renderAll();notify('備份已匯入')}catch(e){console.error(e);notify('備份格式無法讀取')}finally{event.target.value=''}};
+  reader.readAsText(file);
+}
+
+async function deleteCloudRowsForUser(user){
+  if(!user)return [];
+  const errors=[];
+  const tables=['transactions','photos','finance_reports','excel_import_logs','diaries','checkins','relapses','categories','saving_goals','debts','assets','settings'];
+  for(const table of tables){
+    try{const {error}=await cloud.from(table).delete().eq('user_id',user.id);if(error)errors.push(`${table}: ${error.message}`)}catch(e){errors.push(`${table}: ${e.message||e}`)}
+  }
+  return errors;
+}
+
+async function removeStorageTree(prefix){
+  const paths=[];
+  async function walk(folder){
+    const {data,error}=await cloud.storage.from('restart-images').list(folder,{limit:1000});
+    if(error){if(!/not found/i.test(error.message||''))console.warn('Storage list',error);return}
+    for(const item of data||[]){
+      const path=folder?`${folder}/${item.name}`:item.name;
+      if(item.id)paths.push(path);else await walk(path);
+    }
+  }
+  await walk(prefix);
+  if(paths.length){const {error}=await cloud.storage.from('restart-images').remove(paths);if(error)console.warn('Storage remove',error)}
+}
+
+async function resetAll(){
+  if(!confirm('這會清除所有負債、資產、記帳、日記、簽到、照片與設定，並回到全新初始狀態。\n\n確定繼續？'))return;
+  const phrase=prompt('為避免誤觸，請輸入「全部重置」後繼續：','');
+  if(phrase!=='全部重置'){notify('已取消重置');return}
+  const button=document.querySelector('button[onclick="resetAll()"]');
+  if(button){button.disabled=true;button.textContent='重置中…'}
+  try{
+    const {data}=await cloud.auth.getUser();
+    const user=data?.user||null;
+    const errors=await deleteCloudRowsForUser(user);
+    if(user)await removeStorageTree(user.id);
+    localStorage.removeItem(KEY);
+    state=freshInitialState();
+    localStorage.setItem(KEY,JSON.stringify(state));
+    renderAll();
+    if(user)await window.RestartCloudSettings?.save?.();
+    closeSOS?.();
+    showPage('home');
+    if(errors.length){console.warn('部分雲端資料重置失敗',errors);notify('已回到初始設定；部分雲端資料稍後再同步')}else notify('已全部重置並回到初始設定');
+  }catch(e){
+    console.error('全部重置失敗',e);
+    // 即使雲端暫時失敗，也確保手機畫面能回到初始狀態。
+    localStorage.removeItem(KEY);state=freshInitialState();localStorage.setItem(KEY,JSON.stringify(state));renderAll();notify('本機已回到初始設定');
+  }finally{
+    if(button){button.disabled=false;button.textContent='全部重置'}
+  }
+}
+
+window.RestartApp={
+  getState:()=>state,
+  persistLocal:()=>{localStorage.setItem(KEY,JSON.stringify(state));renderAll()},
+  resetLocal:()=>{localStorage.removeItem(KEY);state=freshInitialState();localStorage.setItem(KEY,JSON.stringify(state));renderAll()},
+  defaults:()=>freshInitialState(),
+  render:renderAll
+};
+
+window.addEventListener('DOMContentLoaded',()=>{
+  renderAll();
+  if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(e=>console.warn('SW',e));
+});
+
