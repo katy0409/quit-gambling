@@ -1,15 +1,16 @@
-const CACHE = 'restart-v11-1';
+const CACHE = 'restart-v11-2';
 const FILES = [
   './',
   'index.html',
   'manifest.webmanifest',
   'icon-192.png',
   'icon-512.png',
-  'css/app.css?v=11.1',
-  'js/supabase-config.js?v=11.1',
-  'js/cloud-settings.js?v=11.1',
-  'js/auth.js?v=11.1',
-  'js/app.js?v=11.1'
+  'coin-icon.png',
+  'css/app.css?v=11.2',
+  'js/supabase-config.js?v=11.2',
+  'js/cloud-settings.js?v=11.2',
+  'js/auth.js?v=11.2',
+  'js/app.js?v=11.2'
 ];
 
 self.addEventListener('install', event => {
