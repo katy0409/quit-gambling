@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Restart">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>Restart V10.2 Cloud｜重新開始</title>
+<title>Restart V11.0 Auth｜重新開始</title>
 <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
@@ -17,14 +17,20 @@
     <div class="auth-logo">🌱</div>
     <h1>Restart</h1>
     <p class="auth-sub">登入後，首頁設定會安全同步到雲端。</p>
-    <div class="auth-tabs"><button id="loginTab" class="active" onclick="setAuthMode('login')">登入</button><button id="signupTab" onclick="setAuthMode('signup')">建立帳號</button></div>
-    <div class="field"><label>Email</label><input id="authEmail" type="email" autocomplete="email" placeholder="name@example.com"></div>
-    <div class="field"><label>密碼</label><input id="authPassword" type="password" autocomplete="current-password" minlength="6" placeholder="至少 6 個字元"></div>
-    <div id="authNameField" class="field hidden"><label>顯示名稱（選填）</label><input id="authDisplayName" autocomplete="name" placeholder="你的稱呼"></div>
-    <div id="authMessage" class="auth-message"></div>
-    <button id="authSubmit" class="btn good wide" onclick="submitAuth()">登入</button>
-    <button class="auth-link" onclick="sendResetPassword()">忘記密碼？</button>
-    <p class="muted small" style="text-align:center;margin-bottom:0">V10.2 會同步首頁文字、背景、薪資預估與個人設定；既有本機資料仍會保留。</p>
+    <div class="auth-tabs"><button type="button" id="loginTab" class="active" onclick="setAuthMode('login')">登入</button><button type="button" id="signupTab" onclick="setAuthMode('signup')">建立帳號</button></div>
+    <form id="authForm" onsubmit="event.preventDefault();submitAuth()">
+      <div class="field"><label>Email</label><input id="authEmail" name="username" type="email" autocomplete="username" inputmode="email" placeholder="name@example.com"></div>
+      <div class="field"><label>密碼</label><input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="6" placeholder="至少 6 個字元"></div>
+      <div id="authNameField" class="field hidden"><label>顯示名稱（選填）</label><input id="authDisplayName" autocomplete="name" placeholder="你的稱呼"></div>
+      <div id="rememberRow" class="remember-row"><label><input id="rememberEmail" type="checkbox"> 記住帳號</label><button type="button" class="inline-link" onclick="sendResetPassword()">忘記密碼？</button></div>
+      <div id="authMessage" class="auth-message"></div>
+      <button id="authSubmit" type="submit" class="btn good wide">登入</button>
+    </form>
+    <div class="auth-divider"><span>或使用</span></div>
+    <button type="button" id="googleLoginBtn" class="social-btn google" onclick="signInWithGoogle()"><span class="social-icon">G</span><span>使用 Google 登入</span></button>
+    <button type="button" id="lineLoginBtn" class="social-btn line-login" onclick="signInWithLine()"><span class="social-icon line-icon">LINE</span><span>使用 LINE 登入</span></button>
+    <p class="auth-security-note">🔒 App 不會明碼保存密碼；密碼自動填入由手機鑰匙圈或瀏覽器密碼管理器處理。</p>
+    <p class="muted small" style="text-align:center;margin-bottom:0">V11.0 登入版會保留既有本機資料，並支援 Email 與 Google 登入。</p>
   </div>
 </div>
 
@@ -73,7 +79,7 @@
 </section>
 <section id="more" class="page">
   <h1 class="title">更多</h1>
-  <div class="card"><div class="account-row"><div><div class="muted small">雲端帳號</div><div id="accountEmail" class="account-email">尚未登入</div><div style="margin-top:7px"><span id="cloudStatus" class="sync-badge">● 登入已連線</span></div></div><button class="btn danger" onclick="logoutCloud()">登出</button></div></div>
+  <div class="card"><div class="account-row"><div><div class="muted small">雲端帳號</div><div id="accountEmail" class="account-email">尚未登入</div><div id="accountProvider" class="muted small" style="margin-top:3px">—</div><div style="margin-top:7px"><span id="cloudStatus" class="sync-badge">● 登入已連線</span></div></div><button class="btn danger" onclick="logoutCloud()">登出</button></div></div>
   <div class="card"><h2 style="margin-top:0">首頁與 SOS</h2><button class="btn ghost wide" onclick="openModal('settingsModal')">照片、文字與戒賭理由</button></div>
   <div class="card"><h2 style="margin-top:0">背景顏色</h2><div id="colorOptions" class="color-options"></div><div class="field" style="margin-top:12px"><label>自訂顏色</label><input id="customBg" type="color" onchange="setBg(this.value)"></div></div>
   <div class="card"><h2 style="margin-top:0">Excel 初始資料匯入</h2><p class="muted">支援《記帳.xlsx》中的負債狀況、資產狀況、存錢目標、記帳、負債狀況分類、資產狀況分類、收入分類及支出分類。</p><button class="btn primary wide" onclick="openExcelImport()">選擇 Excel 並預覽</button><input id="excelFile" type="file" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" hidden onchange="readExcelFile(event)"></div>

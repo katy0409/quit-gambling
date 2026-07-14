@@ -1,4 +1,4 @@
-const CACHE='restart-v10-2-cloud-settings-1';
+const CACHE='restart-v11-0-auth-1';
 const FILES=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','css/app.css','js/supabase-config.js','js/cloud-settings.js','js/auth.js','js/app.js'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
