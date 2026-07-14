@@ -8,8 +8,8 @@
 <meta name="apple-mobile-web-app-title" content="Restart">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>Restart V11.0 Auth｜重新開始</title>
-<link rel="stylesheet" href="css/app.css">
+<title>Restart V11.1｜重新開始</title>
+<link rel="stylesheet" href="css/app.css?v=11.1">
 </head>
 <body>
 <div id="authGate" class="auth-gate">
@@ -27,8 +27,8 @@
       <button id="authSubmit" type="submit" class="btn good wide">登入</button>
     </form>
     <div class="auth-divider"><span>或使用</span></div>
-    <button type="button" id="googleLoginBtn" class="social-btn google" onclick="signInWithGoogle()"><span class="social-icon">G</span><span>使用 Google 登入</span></button>
-    <button type="button" id="lineLoginBtn" class="social-btn line-login" onclick="signInWithLine()"><span class="social-icon line-icon">LINE</span><span>使用 LINE 登入</span></button>
+    <button type="button" id="googleLoginBtn" class="social-btn google"><span class="social-icon">G</span><span>使用 Google 登入</span></button>
+    <button type="button" id="lineLoginBtn" class="social-btn line-login"><span class="social-icon line-icon">LINE</span><span>使用 LINE 登入</span></button>
     <p class="auth-security-note">🔒 App 不會明碼保存密碼；密碼自動填入由手機鑰匙圈或瀏覽器密碼管理器處理。</p>
     <p class="muted small" style="text-align:center;margin-bottom:0">V11.0 登入版會保留既有本機資料，並支援 Email 與 Google 登入。</p>
   </div>
@@ -44,7 +44,8 @@
     <div class="finance-summary"><div class="metric"><small>總負債</small><strong id="snapDebt">NT$0</strong></div><div class="metric"><small>可用資產</small><strong id="snapAsset">NT$0</strong></div><div class="metric"><small>存錢進度</small><strong id="snapGoal">0%</strong></div></div>
     <div id="relapseCard" class="card relapse-note" style="margin-top:14px">滑倒了沒關係，重新開始。每一次誠實記錄，都是往前走。</div>
     <button class="btn sos wide" onclick="openSOS()">😣 我現在很想賭</button>
-    <div class="grid2" style="margin-top:10px"><button id="checkBtn" class="btn primary" onclick="checkIn()">✅ 今天不賭</button><button class="btn danger" onclick="recordRelapse()">我又復賭了</button></div>
+    <div class="grid2 home-action-row"><button id="checkBtn" class="btn primary" onclick="checkIn()">✅ 今天不賭</button><button class="btn danger" onclick="recordRelapse()">我又復賭了</button></div>
+    <div class="card game-card" onclick="openGame()"><div class="game-card-main"><div id="homeAvatar" class="mini-avatar">🧑</div><div><div class="muted small">戒賭養成小遊戲</div><strong id="homeGameText">建立你的角色</strong></div></div><div class="game-token">🪙 <span id="homeTokens">0</span></div></div>
     <div class="card tree"><div class="muted">成長中的自己</div><div id="treeEmoji" class="emoji">🌰</div><strong id="treeText">種子正在等待發芽</strong></div>
     <div class="card"><div class="section-head" style="margin:0"><h2>我的里程碑</h2><span id="nextMilestone" class="muted small"></span></div><div id="milestones" class="milestones"></div></div>
   </div>
@@ -99,12 +100,14 @@
 <div id="journalModal" class="modal"><div class="sheet"><div class="sheet-head"><h2>今天發生什麼？</h2><button class="close" onclick="closeModal('journalModal')">×</button></div><input id="journalId" type="hidden"><div class="field"><label>日期</label><input id="journalDate" type="date"></div><div class="field"><label>今天心情</label><div id="moodChoices" class="mood-grid"></div></div><div class="field"><label>今天有多想賭？</label><div id="urgeChoices" class="urge-grid"></div></div><div class="field"><label>內容</label><textarea id="journalText"></textarea></div><button class="btn primary wide" onclick="saveJournal()">儲存</button></div></div>
 <div id="settingsModal" class="modal"><div class="sheet"><div class="sheet-head"><h2>首頁與 SOS 設定</h2><button class="close" onclick="closeModal('settingsModal')">×</button></div><div class="field"><label>首頁封面照片</label><input id="heroPhotoInput" type="file" accept="image/*"></div><div class="field"><label>首頁大標題</label><input id="heroTitleInput"></div><div class="field"><label>首頁提醒文字</label><textarea id="heroTextInput"></textarea></div><div class="field"><label>我的戒賭理由（SOS 顯示）</label><textarea id="reasonInput"></textarea></div><div class="field"><label>重要照片（可多張）</label><input id="sosPhotosInput" type="file" accept="image/*" multiple></div><div id="settingsPhotoGrid" class="photo-grid"></div><button class="btn primary wide" onclick="saveSettings()">儲存設定</button></div></div>
 <div id="excelImportModal" class="modal"><div class="sheet"><div class="sheet-head"><h2>Excel 初始資料匯入</h2><button class="close" onclick="closeModal('excelImportModal')">×</button></div><div id="excelImportIntro"><p class="muted">請選擇符合 Restart 模板的 Excel。匯入前會先顯示筆數與問題，不會直接改動資料。</p><button class="btn primary wide" onclick="document.getElementById('excelFile').click()">選擇 Excel 檔案</button></div><div id="excelImportPreview" class="hidden"><div id="excelFileName" class="alert"></div><div id="excelCounts" class="grid2" style="margin-top:12px"></div><div id="excelWarnings" class="alert-list" style="margin-top:12px"></div><div class="field" style="margin-top:14px"><label>匯入方式</label><select id="excelImportMode"><option value="replace">初始匯入：取代財務、記帳與分類</option><option value="merge">合併匯入：同名稱更新，其餘新增</option></select></div><div class="alert warn"><strong>資料安全說明</strong><div class="small" style="margin-top:4px">首頁照片、戒賭簽到、復賭、SOS、日記與背景設定不會被取代。Excel 內的記帳只作為歷史紀錄，不會再次增減 Excel 已填寫的資產餘額。</div></div><div class="grid2" style="margin-top:12px"><button class="btn ghost" onclick="cancelExcelPreview()">重新選擇</button><button class="btn primary" onclick="confirmExcelImport()">確認匯入</button></div></div></div></div>
+<div id="relapseModal" class="modal"><div class="sheet relapse-sheet"><div class="sheet-head"><h2>誠實記錄</h2><button class="close" onclick="closeRelapseFlow()">×</button></div><div class="sheet-body"><div id="relapseStep1" class="relapse-step"><p class="relapse-message">你願意誠實記錄，已經是在重新開始。</p><h3>確認今天發生復賭？</h3><div class="grid2"><button class="btn good" onclick="relapseResisted()">後來忍住</button><button class="btn danger" onclick="relapseNextReason()">我復賭了</button></div></div><div id="relapseStep2" class="relapse-step hidden"><div class="field"><label>復賭原因</label><input id="relapseReasonInput" placeholder="例如：想翻本、壓力、無聊"></div><button class="btn primary wide" onclick="relapseNextLoss()">加油！調整心情</button></div><div id="relapseStep3" class="relapse-step hidden"><div class="field"><label>本次損失金額</label><input id="relapseLossInput" type="number" min="0" step="1" inputmode="numeric" placeholder="請輸入數字"></div><div class="field"><label>連動帳戶或負債</label><select id="relapseSourceSelect"></select></div><button class="btn danger wide" onclick="finishRelapseFlow()">記錄並重新開始</button></div></div></div></div>
+<div id="gameModal" class="modal"><div class="sheet game-sheet"><div class="sheet-head"><h2>我的角色</h2><button class="close" onclick="closeModal('gameModal')">×</button></div><div class="sheet-body"><div id="gameSetup"><p class="muted">先選擇角色。角色為原創可愛像素 RPG 風格。</p><div class="grid2"><button class="character-choice" onclick="chooseCharacter('male')"><span>👦</span><strong>男生</strong></button><button class="character-choice" onclick="chooseCharacter('female')"><span>👧</span><strong>女生</strong></button></div></div><div id="gameMain" class="hidden"><div class="game-top"><div id="gameAvatar" class="pixel-avatar"></div><div><div class="muted">戒賭幣</div><div class="token-big">🪙 <span id="gameTokens">0</span></div><div class="small muted">每完成一天簽到獲得 1 枚</div></div></div><div class="game-tabs"><button class="active" onclick="showGameTab('closet',this)">衣櫃</button><button onclick="showGameTab('shop',this)">商城</button></div><div id="gameCloset" class="game-panel"></div><div id="gameShop" class="game-panel hidden"></div></div></div></div></div>
 <div id="analysisModal" class="modal"><div class="sheet"><div class="sheet-head"><h2>圖表與交叉分析</h2><button class="close" onclick="closeModal('analysisModal')">×</button></div><div class="analysis-tabs"><button class="active" onclick="renderAnalysis('all',this)">全部</button><button onclick="renderAnalysis('finance',this)">財務</button><button onclick="renderAnalysis('ledger',this)">記帳</button><button onclick="renderAnalysis('recovery',this)">戒賭</button><button onclick="renderAnalysis('mood',this)">心情</button><button onclick="renderAnalysis('cross',this)">交叉分析</button></div><div id="analysisInsights"></div><div id="analysisCharts" class="chart-grid"></div></div></div>
 <div id="sos" class="urge"><div class="urge-body"><button class="close" onclick="closeSOS()">×</button><div class="sos-photo"><img id="sosImg" alt="重要照片"></div><div class="sos-controls"><button onclick="prevSOSPhoto()">← 上一張</button><span id="sosCount"></span><button onclick="nextSOSPhoto()">下一張 →</button></div><div id="sosReason" style="font-size:1.2rem;line-height:1.7;margin:18px 0;text-align:center"></div><div id="timer" class="timer">05:00</div><button class="btn line wide" onclick="location.href='https://line.me/ti/g2/LGgd7--YIY2SE05Euo2Cgf5Dt12XgXeA-i5VqA?utm_source=invitation&utm_medium=link_copy&utm_campaign=default'">💬 前往接渡有緣人</button><button class="btn wide" onclick="startBreathing()">🧘 60 秒呼吸</button><button class="btn wide" onclick="showPage('finance');closeSOS()">💰 看財務提醒</button><button class="btn wide" onclick="openJournal();closeSOS()">📓 寫下現在感受</button><button class="btn wide" onclick="sosSuccess()">✅ 我忍住了</button></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="js/supabase-config.js"></script>
-<script src="js/cloud-settings.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/app.js"></script>
+<script src="js/supabase-config.js?v=11.1"></script>
+<script src="js/cloud-settings.js?v=11.1"></script>
+<script src="js/auth.js?v=11.1"></script>
+<script src="js/app.js?v=11.1"></script>
 </body></html>
