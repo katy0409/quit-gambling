@@ -1,13 +1,11 @@
-const CACHE = 'restart-v13.3';
+const CACHE = 'restart-v13.6.2-avatar-base';
 const FILES = [
   './','index.html','manifest.webmanifest','icon-192.png','icon-512.png','coin-icon.png',
   'css/app.css?v=13.3','js/supabase-config.js?v=13.3','js/cloud-settings.js?v=13.3',
-  'js/auth.js?v=13.3','js/app.js?v=13.3','js/avatar-v123.js?v=13.3','js/square-v13.js?v=13.3','js/feedback-v133.js?v=13.3',
-  'assets/avatar/body/body_front.png','assets/avatar/body/body_left.png','assets/avatar/body/body_right.png',
-  'assets/avatar/body/body_back_left.png','assets/avatar/body/body_back.png','assets/avatar/body/body_back_right.png',
-  'assets/avatar/head/head_base.png','assets/avatar/face/male_face_default.png','assets/avatar/face/female_face_default.png',
-  'assets/avatar/hair/male/male_hair_001_front.png','assets/avatar/hair/male/male_hair_001_back.png',
-  'assets/avatar/hair/female/female_hair_001_front.png','assets/avatar/hair/female/female_hair_001_back.png'
+  'js/auth.js?v=13.3','js/app.js?v=13.3','js/avatar-v123.js?v=13.6.2','js/square-v13.js?v=13.3','js/feedback-v133.js?v=13.3',
+  'assets/avatar/base/base_front.png','assets/avatar/base/base_left.png','assets/avatar/base/base_right.png',
+  'assets/avatar/face/male_face_default.png','assets/avatar/face/female_face_default.png',
+  'assets/avatar/hair/male/male_hair_001_front.png','assets/avatar/hair/female/female_hair_001_front.png'
 ];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(FILES)).then(() => self.skipWaiting())));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())));
