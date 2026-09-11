@@ -198,12 +198,33 @@ async function initCloudAuth() {
   restoreRememberedEmail();
   document.getElementById('googleLoginBtn')?.addEventListener('click', signInWithGoogle);
   document.getElementById('lineLoginBtn')?.addEventListener('click', signInWithLine);
-  const { data, error } = await window.cloud.auth.getSession();
-  if (error) console.warn(error);
-  await applySession(data?.session || null);
-  window.cloud.auth.onAuthStateChange((_event, session) => {
-    setTimeout(() => applySession(session), 0);
-  });
+
+  // 保險機制：登入狀態檢查最多等 6 秒。萬一 Supabase 暫時連不上（例如剛從暫停恢復、
+  // 或網路不穩），也不要讓整個 App 永遠卡在空白畫面，先當作未登入處理、顯示登入畫面，
+  // 使用者還是看得到並能使用 App，之後也能重新整理再試登入。
+  let settled = false;
+  const releaseGate = (session) => {
+    if (settled) return;
+    settled = true;
+    clearTimeout(fallbackTimer);
+    applySession(session || null);
+  };
+  const fallbackTimer = setTimeout(() => {
+    console.warn('登入狀態檢查逾時，先顯示畫面');
+    releaseGate(null);
+  }, 6000);
+
+  try {
+    const { data, error } = await window.cloud.auth.getSession();
+    if (error) console.warn(error);
+    releaseGate(data?.session || null);
+    window.cloud.auth.onAuthStateChange((_event, session) => {
+      setTimeout(() => applySession(session), 0);
+    });
+  } catch (e) {
+    console.error('雲端登入初始化失敗，先顯示登入畫面', e);
+    releaseGate(null);
+  }
 }
 
 

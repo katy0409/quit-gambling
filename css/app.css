@@ -967,3 +967,11 @@ body.square-keyboard-open .square-sheet{height:100dvh!important;grid-template-ro
     min-height:222px!important;
   }
 }
+
+/* 記帳：轉帳交易顯示、類別管理排序與預設帳戶列 */
+.transfer{color:#7a6a3c}
+.cat-item .item-head{align-items:center}
+.cat-default-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.cat-default-row .tiny-label{font-size:.8rem;color:var(--muted);font-weight:800;white-space:nowrap}
+.cat-default-row select{flex:1;min-width:120px;height:40px;min-height:40px;max-height:40px;font-size:.85rem}
+#transferFields{display:flex;flex-direction:column;gap:0}
