@@ -1,7 +1,7 @@
 /* Restart V13.3 — Supabase feedback center */
 (function(){
   'use strict';
-  const VERSION='13.27';
+  const VERSION='13.28';
   const CATEGORY_LABELS={bug:'Bug／異常',feature:'功能建議',avatar:'角色／換裝',shop:'商城／衣櫃',square:'線上廣場',other:'其他'};
   const STATUS_LABELS={open:'未處理',processing:'處理中',done:'已完成'};
   let loaded=false;

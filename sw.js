@@ -1,5 +1,5 @@
-const CACHE = 'restart-v13.27-offline-sync-1';
-const VER = '13.27';
+const CACHE = 'restart-v13.28-receipt-fix-1';
+const VER = '13.28';
 const FILES = [
   './','index.html','manifest.webmanifest','icon-192.png','icon-512.png','coin-icon.png',
   `css/app.css?v=${VER}`,`js/supabase-config.js?v=${VER}`,`js/core-v14.js?v=${VER}`,`js/cloud-settings.js?v=${VER}`,
