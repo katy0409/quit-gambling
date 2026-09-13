@@ -9,7 +9,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Restart V13.16｜功能整合修正版</title>
-<link rel="stylesheet" href="css/app.css?v=13.26">
+<link rel="stylesheet" href="css/app.css?v=13.27">
 </head>
 <body class="auth-pending">
 <div id="authGate" class="auth-gate">
@@ -29,7 +29,8 @@
     <button type="button" id="googleLoginBtn" class="social-btn google"><span class="social-icon">G</span><span>使用 Google 登入</span></button>
     <button type="button" id="lineLoginBtn" class="social-btn line-login"><span class="social-icon line-icon">LINE</span><span>使用 LINE 登入</span></button>
     <p class="auth-security-note">🔒 App 不會明碼保存密碼；密碼自動填入由手機鑰匙圈或瀏覽器密碼管理器處理。</p>
-    <p class="muted small" style="text-align:center;margin-bottom:6px">V13.20 支援 Email、Google 登入。暫不支援 LINE 登入。</p><button type="button" class="admin-login-link" onclick="openAdminLogin()">管理者入口</button>
+    <button type="button" id="offlineEnterBtn" class="btn ghost wide hidden" style="margin-top:10px">先離線使用（資料只存在這支手機）</button>
+    <p class="muted small" style="text-align:center;margin-bottom:6px">V13.27 支援 Email、Google 登入。暫不支援 LINE 登入。</p><button type="button" class="admin-login-link" onclick="openAdminLogin()">管理者入口</button>
   </div>
 </div>
 
@@ -147,15 +148,16 @@
 <div id="analysisModal" class="modal analysis-modal"><div class="sheet analysis-sheet"><div class="sheet-head"><div><h2>圖表分析</h2><div class="small muted">依目前財務、記帳、戒賭與日記資料整理</div></div><button class="close" onclick="closeModal('analysisModal')">×</button></div><div class="sheet-body"><div class="analysis-tabs"><button class="active" onclick="renderAnalysis('all',this)">全部</button><button onclick="renderAnalysis('finance',this)">財務</button><button onclick="renderAnalysis('ledger',this)">記帳</button><button onclick="renderAnalysis('recovery',this)">戒賭</button><button onclick="renderAnalysis('mood',this)">心情</button><button onclick="renderAnalysis('cross',this)">交叉分析</button></div><div id="analysisCharts" class="analysis-charts"></div><section class="analysis-insight-section"><h3>分析重點</h3><div id="analysisInsights" class="analysis-insights"></div></section></div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="js/supabase-config.js?v=13.26"></script>
-<script src="js/cloud-settings.js?v=13.26"></script>
-<script src="js/auth.js?v=13.26"></script>
-<script src="js/sos-quotes.js?v=13.26"></script>
-<script src="js/app.js?v=13.26"></script>
-<script src="js/avatar-v123.js?v=13.26.1"></script>
-<script src="js/square-v13.js?v=13.26"></script>
-<script src="js/feedback-v133.js?v=13.26"></script>
-<script src="js/admin-v134.js?v=13.26"></script><script src="js/square-chat-v1315.js?v=13.26"></script>
-<script src="js/wallet-v135.js?v=13.26"></script>
-<script src="js/daily-v135.js?v=13.26"></script>
+<script src="js/supabase-config.js?v=13.27"></script>
+<script src="js/core-v14.js?v=13.27"></script>
+<script src="js/cloud-settings.js?v=13.27"></script>
+<script src="js/auth.js?v=13.27"></script>
+<script src="js/sos-quotes.js?v=13.27"></script>
+<script src="js/app.js?v=13.27"></script>
+<script src="js/avatar-v123.js?v=13.27"></script>
+<script src="js/square-v13.js?v=13.27"></script>
+<script src="js/feedback-v133.js?v=13.27"></script>
+<script src="js/admin-v134.js?v=13.27"></script><script src="js/square-chat-v1315.js?v=13.27"></script>
+<script src="js/wallet-v135.js?v=13.27"></script>
+<script src="js/daily-v135.js?v=13.27"></script>
 </body></html>

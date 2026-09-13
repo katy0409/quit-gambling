@@ -4,6 +4,10 @@ const REMEMBER_EMAIL_KEY = 'restart-remember-email';
 const LINE_OAUTH_PROVIDER = '';
 
 let authMode = 'login';
+// V13.27：避免 applySession 重複執行（啟動時會觸發 2～3 次，每小時更新 token 也會觸發）。
+let appliedUserId = undefined;
+let accountReadyFor = '';
+let offlineMode = false;
 
 function setAuthMode(mode) {
   authMode = mode;
@@ -30,6 +34,7 @@ function friendlyAuthError(error) {
   if (/Password should be/i.test(m)) return '密碼長度不足，請至少輸入 6 個字元。';
   if (/rate limit/i.test(m)) return '操作太頻繁，請稍後再試。';
   if (/provider is not enabled/i.test(m)) return '此登入方式尚未在 Supabase 啟用。';
+  if (/離線|offline|Failed to fetch|NetworkError/i.test(m)) return '目前連不上網路，請稍後再試。';
   return m;
 }
 
@@ -102,8 +107,8 @@ async function signInWithGoogle() {
   showAuthMessage('正在開啟 Google 登入…', true);
 
   try {
-    if (!window.cloud?.auth) {
-      throw new Error('登入元件尚未載入，請重新整理頁面後再試。');
+    if (!window.cloud?.auth || window.cloud.__offline) {
+      throw new Error('目前離線，無法使用 Google 登入。');
     }
 
     const { data, error } = await window.cloud.auth.signInWithOAuth({
@@ -159,49 +164,118 @@ function getLoginProvider(user) {
   return 'Email 帳號';
 }
 
-async function applySession(session) {
+// 沒有網路（或 Supabase 程式庫載不進來）時，讓使用者仍能使用 App 與 SOS。
+function enterOfflineMode(auto) {
+  offlineMode = true;
+  document.body.classList.remove('auth-pending');
+  document.body.classList.add('restart-offline');
+  const gate = document.getElementById('authGate');
+  if (gate) gate.classList.add('hidden');
+  const emailEl = document.getElementById('accountEmail');
+  if (emailEl) emailEl.textContent = '離線使用中（未連線雲端）';
+  const providerEl = document.getElementById('accountProvider');
+  if (providerEl) providerEl.textContent = '—';
+  const badge = document.getElementById('cloudStatus');
+  if (badge) badge.textContent = '● 離線模式，資料先存在手機';
+  if (!auto && typeof notify === 'function') notify('已進入離線模式，資料會先存在這支手機');
+}
+window.enterOfflineMode = enterOfflineMode;
+
+function showOfflineOption(reason) {
+  const btn = document.getElementById('offlineEnterBtn');
+  if (btn) btn.classList.remove('hidden');
+  if (reason) showAuthMessage(reason);
+}
+
+async function ensureProfileAndSync(session) {
+  const userId = session.user.id;
+  const email = session.user.email || '';
+  try {
+    const suggestedName = session.user.user_metadata?.full_name || session.user.user_metadata?.display_name || '';
+    const { data: existing } = await window.cloud.from('profiles').select('display_name').eq('id', userId).maybeSingle();
+    const payload = { id: userId, email };
+    if (!existing?.display_name && suggestedName) payload.display_name = suggestedName.slice(0, 12);
+    const { error } = await window.cloud.from('profiles').upsert(payload, { onConflict: 'id' });
+    if (error) throw error;
+    const { data: profile } = await window.cloud.from('profiles').select('display_name').eq('id', userId).maybeSingle();
+    const nicknameInput = document.getElementById('profileNickname');
+    if (nicknameInput) nicknameInput.value = profile?.display_name || '';
+  } catch (e) {
+    console.warn('profile upsert', e);
+  }
+  await window.RestartCloudSettings?.initialize?.();
+  // 整份資料的雲端備援：先比對雲端與本機，再決定要拉回或推上去。
+  await window.RestartSync?.initial?.(userId);
+  // 把還留在本機的 base64 圖片搬上雲端，釋放手機儲存空間。
+  window.RestartImages?.migrateLocal?.().catch(e => console.warn('圖片移轉失敗', e));
+}
+
+async function applySession(session, options) {
+  const force = !!(options && options.force);
+  const userId = session?.user?.id || null;
   const gate = document.getElementById('authGate');
   document.body.classList.remove('auth-pending');
+
+  if (!force && appliedUserId === userId) return; // 同一個帳號狀態不重複套用
+  appliedUserId = userId;
+
+  if (userId) {
+    offlineMode = false;
+    document.body.classList.remove('restart-offline');
+    // 修正：不同帳號使用同一支手機時，各自使用獨立的本機資料空間。
+    const switched = window.RestartStore?.bindUser?.(userId);
+    if (switched) window.RestartApp?.reloadFromStorage?.();
+  } else {
+    window.RestartSync?.stop?.();
+    if (!offlineMode) {
+      const switched = window.RestartStore?.bindUser?.(null);
+      if (switched) window.RestartApp?.reloadFromStorage?.();
+    }
+  }
+
   const email = session?.user?.email || '';
-  gate.classList.toggle('hidden', !!session);
-  document.getElementById('accountEmail').textContent = email || '尚未登入';
+  if (gate) gate.classList.toggle('hidden', !!session);
+  const emailEl = document.getElementById('accountEmail');
+  if (emailEl) emailEl.textContent = email || (offlineMode ? '離線使用中（未連線雲端）' : '尚未登入');
   const providerEl = document.getElementById('accountProvider');
   if (providerEl) providerEl.textContent = session ? getLoginProvider(session.user) : '—';
   const badge = document.getElementById('cloudStatus');
-  if (badge) badge.textContent = session ? '● 登入已連線' : '● 尚未登入';
+  if (badge) badge.textContent = session ? '● 登入已連線' : (offlineMode ? '● 離線模式' : '● 尚未登入');
 
   if (session) {
-    try {
-      const suggestedName = session.user.user_metadata?.full_name || session.user.user_metadata?.display_name || '';
-      const { data: existing } = await window.cloud.from('profiles').select('display_name').eq('id', session.user.id).maybeSingle();
-      const payload = { id: session.user.id, email };
-      if (!existing?.display_name && suggestedName) payload.display_name = suggestedName.slice(0, 12);
-      const { error } = await window.cloud.from('profiles').upsert(payload, { onConflict: 'id' });
-      if (error) throw error;
-      const { data: profile } = await window.cloud.from('profiles').select('display_name').eq('id', session.user.id).maybeSingle();
-      const nicknameInput = document.getElementById('profileNickname');
-      if (nicknameInput) nicknameInput.value = profile?.display_name || '';
-    } catch (e) {
-      console.warn('profile upsert', e);
+    if (accountReadyFor !== userId) {
+      accountReadyFor = userId;
+      await ensureProfileAndSync(session);
     }
-    await window.RestartCloudSettings?.initialize?.();
+  } else {
+    accountReadyFor = '';
   }
 }
 
 async function logoutCloud() {
   if (!confirm('確定登出雲端帳號？本機資料仍會保留。')) return;
+  try { await window.RestartSync?.push?.(); } catch (e) { console.warn('登出前同步失敗', e); }
+  window.RestartSync?.stop?.();
   await window.cloud.auth.signOut();
-  await applySession(null);
+  offlineMode = false;
+  await applySession(null, { force: true });
 }
 
 async function initCloudAuth() {
   restoreRememberedEmail();
   document.getElementById('googleLoginBtn')?.addEventListener('click', signInWithGoogle);
   document.getElementById('lineLoginBtn')?.addEventListener('click', signInWithLine);
+  document.getElementById('offlineEnterBtn')?.addEventListener('click', () => enterOfflineMode(false));
+
+  // Supabase 程式庫沒載入（例如離線首次開啟）：直接進離線模式，不要卡在登入頁。
+  if (!window.RESTART_CLOUD_READY || window.cloud?.__offline) {
+    enterOfflineMode(true);
+    return;
+  }
 
   // 保險機制：登入狀態檢查最多等 6 秒。萬一 Supabase 暫時連不上（例如剛從暫停恢復、
-  // 或網路不穩），也不要讓整個 App 永遠卡在空白畫面，先當作未登入處理、顯示登入畫面，
-  // 使用者還是看得到並能使用 App，之後也能重新整理再試登入。
+  // 或網路不穩），也不要讓整個 App 永遠卡在空白畫面；此時提供「先離線使用」的入口，
+  // 使用者仍然可以記帳、寫日記與使用 SOS。
   let settled = false;
   const releaseGate = (session) => {
     if (settled) return;
@@ -212,21 +286,24 @@ async function initCloudAuth() {
   const fallbackTimer = setTimeout(() => {
     console.warn('登入狀態檢查逾時，先顯示畫面');
     releaseGate(null);
+    showOfflineOption('目前連不上雲端，可以先離線使用。');
   }, 6000);
 
   try {
     const { data, error } = await window.cloud.auth.getSession();
     if (error) console.warn(error);
     releaseGate(data?.session || null);
-    window.cloud.auth.onAuthStateChange((_event, session) => {
+    if (!data?.session && !navigator.onLine) showOfflineOption('目前沒有網路連線，可以先離線使用。');
+    window.cloud.auth.onAuthStateChange((event, session) => {
+      // TOKEN_REFRESHED／INITIAL_SESSION 等事件不會帶來帳號變化，交由 applySession 自行去重。
       setTimeout(() => applySession(session), 0);
     });
   } catch (e) {
     console.error('雲端登入初始化失敗，先顯示登入畫面', e);
     releaseGate(null);
+    showOfflineOption('目前連不上雲端，可以先離線使用。');
   }
 }
-
 
 async function saveProfileNickname() {
   const input = document.getElementById('profileNickname');
@@ -239,11 +316,11 @@ async function saveProfileNickname() {
   try {
     const { data: { user } } = await window.cloud.auth.getUser();
     if (!user) throw new Error('請先登入');
-    const { error } = await window.cloud.from('profiles').upsert({ id:user.id, email:user.email || '', display_name:nickname }, { onConflict:'id' });
+    const { error } = await window.cloud.from('profiles').upsert({ id: user.id, email: user.email || '', display_name: nickname }, { onConflict: 'id' });
     if (error) throw error;
     await window.cloud.auth.updateUser({ data: { display_name: nickname } });
     if (message) { message.textContent = '暱稱已儲存。'; message.className = 'small good-text'; }
-    window.dispatchEvent(new CustomEvent('restart:nickname-changed', { detail:{ nickname } }));
+    window.dispatchEvent(new CustomEvent('restart:nickname-changed', { detail: { nickname } }));
   } catch (e) {
     if (message) { message.textContent = '儲存失敗：' + e.message; message.className = 'small error'; }
   }

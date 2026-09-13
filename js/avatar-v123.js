@@ -351,6 +351,11 @@
     root.querySelectorAll('canvas.avatar-canvas').forEach(renderCanvas);
   }
 
+  // 即使呼叫端已過濾，這裡仍對所有屬性值做跳脫，避免任何字串直接進入 HTML。
+  function attr(value) {
+    return String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
   function canvasMarkup(gender = 'male', size = 'full', equippedOverride = null) {
     const hairColor = resolveHairColor(equippedOverride);
     const eyeColor = resolveEyeColor(equippedOverride);
@@ -358,7 +363,7 @@
     const thumbSlot = equippedOverride?.__thumbSlot || '';
     let eq={};try{eq=equippedOverride||state?.game?.equipped||{}}catch(_){eq=equippedOverride||{}}
     const skinTone = resolveSkinTone();
-    return `<canvas class="avatar-canvas avatar-canvas-${size}" data-gender="${gender}" data-direction="${direction}" data-hair-color="${hairColor}" data-eye-color="${eyeColor}" data-skin-tone="${skinTone}" data-thumb-slot="${thumbSlot}" data-top="${eq.top||''}" data-bottom="${eq.bottom||''}" data-set="${eq.set||''}" data-shoes="${eq.shoes||''}" data-expression="${eq.expression||'expression-soft'}" aria-label="${gender === 'female' ? '女生' : '男生'}角色"></canvas>`;
+    return `<canvas class="avatar-canvas avatar-canvas-${attr(size)}" data-gender="${attr(gender)}" data-direction="${attr(direction)}" data-hair-color="${attr(hairColor)}" data-eye-color="${attr(eyeColor)}" data-skin-tone="${attr(skinTone)}" data-thumb-slot="${attr(thumbSlot)}" data-top="${attr(eq.top||'')}" data-bottom="${attr(eq.bottom||'')}" data-set="${attr(eq.set||'')}" data-shoes="${attr(eq.shoes||'')}" data-expression="${attr(eq.expression||'expression-soft')}" aria-label="${gender === 'female' ? '女生' : '男生'}角色"></canvas>`;
   }
 
   window.avatarV123Markup = canvasMarkup;

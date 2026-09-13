@@ -93,6 +93,21 @@
     return output;
   }
 
+  // V13.27 安全性修正：其他玩家傳來的裝備 id 一律比對商城清單，
+  // 不在清單內就當成未裝備，避免惡意字串被塞進 HTML 屬性造成 XSS。
+  function safeItemId(value, slot) {
+    const id = String(value || '');
+    if (!id) return '';
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(id)) return '';
+    const items = Array.isArray(window.GAME_ITEMS) ? window.GAME_ITEMS : [];
+    const item = items.find(x => x.id === id);
+    if (!item) return '';
+    if (slot && item.slot !== slot) return '';
+    return id;
+  }
+
+  window.RestartSafeItemId = safeItemId;
+
   function playerMarkup(player) {
     const mine = player.user_id === selfUser?.id || player.presenceKey === selfKey;
     const x = clamp(Number(player.x) || 50, 5, 95);
@@ -104,12 +119,12 @@
     const equipped = {
       hairColor: null,
       eyeColor: null,
-      top: player.equipped_top || '',
-      bottom: player.equipped_bottom || '',
-      set: player.equipped_set || '',
-      shoes: player.equipped_shoes || '',
-      expression: player.equipped_expression || 'expression-soft',
-      hair: player.equipped_hair || ''
+      top: safeItemId(player.equipped_top, 'top'),
+      bottom: safeItemId(player.equipped_bottom, 'bottom'),
+      set: safeItemId(player.equipped_set, 'set'),
+      shoes: safeItemId(player.equipped_shoes, 'shoes'),
+      expression: safeItemId(player.equipped_expression, 'expression') || 'expression-soft',
+      hair: safeItemId(player.equipped_hair, 'hair')
     };
     return `<div class="square-player ${mine ? 'is-me' : ''}" data-user-id="${escapeHtml(player.user_id || player.presenceKey)}" style="left:${x}%;top:${y}%;z-index:${depth}">
       <div class="square-speech" aria-live="polite"></div>
