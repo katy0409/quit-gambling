@@ -1,9 +1,9 @@
-const CACHE = 'restart-v13.29-overview-1';
-const VER = '13.29';
+const CACHE = 'restart-v13.30-month-1';
+const VER = '13.30';
 const FILES = [
   './','index.html','manifest.webmanifest','icon-192.png','icon-512.png','coin-icon.png',
   `css/app.css?v=${VER}`,`js/supabase-config.js?v=${VER}`,`js/core-v14.js?v=${VER}`,`js/cloud-settings.js?v=${VER}`,
-  `js/auth.js?v=${VER}`,`js/sos-quotes.js?v=${VER}`,`js/app.js?v=${VER}`,`js/avatar-v123.js?v=${VER}`,`js/square-v13.js?v=${VER}`,`js/feedback-v133.js?v=${VER}`,`js/admin-v134.js?v=${VER}`,`js/square-chat-v1315.js?v=${VER}`,`js/wallet-v135.js?v=${VER}`,`js/daily-v135.js?v=${VER}`,
+  `js/auth.js?v=${VER}`,`js/sos-quotes.js?v=${VER}`,`js/app.js?v=${VER}`,`js/avatar-v123.js?v=${VER}`,`js/square-v13.js?v=${VER}`,`js/feedback-v133.js?v=${VER}`,`js/admin-v134.js?v=${VER}`,`js/square-chat-v1315.js?v=${VER}`,`js/wallet-v135.js?v=${VER}`,`js/daily-v135.js?v=${VER}`,`js/month-v1330.js?v=${VER}`,
   'assets/avatar/base/base_front.png','assets/avatar/base/base_left.png','assets/avatar/base/base_right.png',
   'assets/avatar/expression/default/default_front.png','assets/avatar/expression/default/default_left.png','assets/avatar/expression/default/default_right.png',
   'assets/avatar/hair/male/male_hair_001_front.png','assets/avatar/hair/male/male_hair_001_left.png','assets/avatar/hair/male/male_hair_001_right.png','assets/avatar/hair/female/female_hair_001_front.png','assets/avatar/hair/female/female_hair_001_left.png','assets/avatar/hair/female/female_hair_001_right.png',

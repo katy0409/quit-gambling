@@ -1028,3 +1028,17 @@ body.square-keyboard-open .square-sheet{height:100dvh!important;grid-template-ro
 .tx-day{margin-bottom:6px}
 .tx-day-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0 7px;font-weight:850;border-bottom:2px solid var(--line);background:var(--card)}
 @media(max-width:640px){.snap-top{grid-template-columns:1fr}.snap-side{grid-template-columns:1fr 1fr}.cat-row{grid-template-columns:minmax(52px,26%) 1fr auto}}
+
+/* V13.30 分月查詢 */
+.month-bar{display:flex;align-items:center;gap:8px;margin:0 0 12px}
+.month-step{flex:0 0 40px;height:40px;border:1px solid var(--line);background:#fff;border-radius:50%;font-size:1.3rem;font-weight:900;color:#3178d5}
+.month-step:disabled{opacity:.35}
+.month-select{flex:1;min-width:0;height:40px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:0 14px;font:inherit;font-weight:850;text-align:center;text-align-last:center;-webkit-appearance:none;appearance:none}
+.month-today{flex:0 0 auto;height:40px;border:1px solid #f3b4a5;background:#fff1ec;color:#d96044;border-radius:999px;padding:0 12px;font-weight:850}
+.journal-month-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;align-items:end}
+.journal-month-summary small{display:block}
+.journal-month-summary strong{font-size:1.25rem}
+.journal-moods{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px;font-weight:800}
+.month-snap-figures{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.month-snap-figures small{display:block;color:var(--muted);font-size:.8rem}
+.month-snap-figures b{font-size:1.1rem}
