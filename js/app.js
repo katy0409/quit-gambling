@@ -36,10 +36,32 @@ function renderHome(){const st=currentStreak(),best=Math.max(Number(state.best||
 function checkIn(){if(!state.checkins.includes(today())){state.checkins.push(today());state.best=Math.max(state.best||0,currentStreak());save();notify('今天也成功了')}else notify('今天已經簽到')}
 function recordRelapse(){if(!confirm('你願意誠實記錄，已經是在重新開始。\n\n確認今天發生復賭？'))return;const reason=prompt('復賭原因（例如：想翻本、壓力、無聊）','想翻本')||'未填寫';const loss=Number(prompt('本次損失金額（可填 0）','0')||0);state.relapses.push({id:uid(),date:today(),reason,loss,streak:currentStreak()});state.best=Math.max(state.best||0,currentStreak());state.checkins=[];save();notify('滑倒了沒關係，明天重新開始')}
 function moneyHtml(n){const v=Math.round(Number(n||0)).toLocaleString('zh-TW');return `<span class="money-prefix">NT$</span><span class="money-value">${v}</span>`}
-function renderFinance(){const t=totals(),h=calcHealth();$('finDebt').innerHTML=moneyHtml(t.debt);$('finAsset').innerHTML=moneyHtml(t.assets);$('finDue').innerHTML=moneyHtml(t.monthly);$('healthScore').textContent=h.score;$('healthRing').style.setProperty('--score',h.score);const label=h.score>=80?'穩定':h.score>=60?'注意':h.score>=40?'偏高風險':'高風險';$('healthLabel').textContent='目前健康度：'+h.score+' 分｜'+label;$('healthText').textContent=h.reasons[0]||'目前方向穩定，請持續保留還款緩衝與存款。';renderForecasts();renderAlerts(h,t);renderUpcoming();renderDebts();renderAssets();renderGoals()}
+function renderFinance(){const t=totals(),h=calcHealth();renderSnapshot(t);$('healthScore').textContent=h.score;$('healthRing').style.setProperty('--score',h.score);const label=h.score>=80?'穩定':h.score>=60?'注意':h.score>=40?'偏高風險':'高風險';$('healthLabel').textContent='目前健康度：'+h.score+' 分｜'+label;$('healthText').textContent=h.reasons[0]||'目前方向穩定，請持續保留還款緩衝與存款。';renderForecasts();renderAlerts(h,t);renderUpcoming();renderDebts();renderAssets();renderGoals()}
 function renderAlerts(h,t){const arr=[];state.debts.filter(x=>x.amount>0&&x.due&&debtCurrentRemaining(x)>0).sort((a,b)=>a.due.localeCompare(b.due)).slice(0,5).forEach(x=>{const days=dateDiff(x.due),txt=days<0?`已逾期 ${Math.abs(days)} 天`:days===0?'今天到期':`還有 ${days} 天到期`;if(days<=7)arr.push({type:days<=3?'bad':'warn',text:`${x.name||x.type} ${txt}，本期尚欠 ${fmt(debtCurrentRemaining(x))}`})});h.reasons.forEach(r=>arr.push({type:h.score<50?'bad':'warn',text:r}));if(!arr.length)arr.push({type:'',text:'目前沒有急迫風險，請持續按計畫還款與存款。'});$('financeAlerts').innerHTML=arr.map(x=>`<div class="alert ${x.type}">${esc(x.text)}</div>`).join('')}
 function renderUpcoming(){const xs=state.debts.filter(x=>x.amount>0&&x.due&&debtCurrentRemaining(x)>0).map(x=>({...x,days:dateDiff(x.due)})).filter(x=>x.days<=30).sort((a,b)=>a.days-b.days);$('upcomingList').innerHTML=xs.length?xs.map(x=>`<div class="upcoming-item ${x.days<=3?'urgent':x.days<=7?'soon':''}"><div><strong>${esc(x.name||x.type)}</strong><div class="sub">${esc(x.due)}</div></div><div class="right"><strong>${fmt(debtCurrentRemaining(x))}</strong><div class="sub">${x.days<0?'已逾期 '+Math.abs(x.days)+' 天':x.days===0?'今天到期':'還有 '+x.days+' 天'}</div></div></div>`).join(''):'<div class="empty">未來 30 天沒有需繳款項</div>'}
-function renderDebts(){$('debtList').innerHTML=state.debts.length?state.debts.map(x=>{const rem=debtCurrentRemaining(x),over=debtIsOverdue(x),days=x.due?dateDiff(x.due):9999;return `<div class="item"><div class="item-head"><div><div class="item-title">${esc(x.name||x.type)}</div><div class="muted small">${esc(x.type)}</div></div><div class="item-amount">${fmt(x.amount)}</div></div>${over?`<div class="debt-overdue">已逾期 ${Math.abs(days)} 天，尚欠 ${fmt(rem)}</div>`:''}<div class="detail-list"><div class="detail-row"><span class="label">利率</span><span class="value">${Number(x.rate||0)}%</span></div><div class="detail-row"><span class="label">每期約</span><span class="value">${fmt(debtPayment(x))}</span></div><div class="detail-row"><span class="label">本期應繳</span><span class="value">${fmt(debtCurrentDue(x))}</span></div><div class="detail-row"><span class="label">本期已繳</span><span class="value">${fmt(x.currentPaid||0)}</span></div><div class="detail-row ${rem>0&&days<0?'bad':rem>0&&days<=7?'warn':''}"><span class="label">剩餘繳費</span><span class="value">${fmt(rem)}</span></div><div class="detail-row"><span class="label">剩餘期數</span><span class="value">${Number(x.terms||0)} 期</span></div><div class="detail-row"><span class="label">下期繳費</span><span class="value">${esc(x.due||'未設定')}</span></div></div><div class="actions"><button class="tiny edit" onclick="openDebt('${x.id}')">編輯</button><button class="tiny pay" onclick="openPay('${x.id}')">繳費</button><button class="tiny delete" onclick="deleteDebt('${x.id}')">刪除</button></div></div>`}).join(''):'<div class="empty solid-empty">尚未新增負債</div>'}
+function debtSortedList(){let xs=[...state.debts];
+ if(debtFilter==='unpaid')xs=xs.filter(x=>debtCurrentRemaining(x)>0);
+ else if(debtFilter==='overdue')xs=xs.filter(x=>debtIsOverdue(x));
+ const by={due:(a,b)=>(a.due||'9999-12-31').localeCompare(b.due||'9999-12-31'),amount:(a,b)=>Number(b.amount||0)-Number(a.amount||0),rate:(a,b)=>Number(b.rate||0)-Number(a.rate||0),small:(a,b)=>Number(a.amount||0)-Number(b.amount||0)};
+ return xs.sort(by[debtSort]||by.due)}
+function renderDebts(){const sortEl=$('debtSort');if(sortEl&&sortEl.value!==debtSort)sortEl.value=debtSort;const xs=debtSortedList();
+ if(!state.debts.length){$('debtList').innerHTML='<div class="empty solid-empty">尚未新增負債</div>';return}
+ if(!xs.length){$('debtList').innerHTML='<div class="empty solid-empty">這個條件下沒有項目</div>';return}
+ $('debtList').innerHTML=xs.map(x=>{const rem=debtCurrentRemaining(x),due=debtCurrentDue(x),paid=Math.min(Number(x.currentPaid||0),due),over=debtIsOverdue(x),days=x.due?dateDiff(x.due):9999,pct=due>0?Math.round(paid/due*100):100;
+  const statusText=rem<=0?'本期已繳清':over?`逾期 ${Math.abs(days)} 天`:days<=7?`${days} 天內到期`:'本期待繳';
+  const statusClass=rem<=0?'ok':over?'bad':days<=7?'warn':'';
+  return `<div class="debt-row ${statusClass}" id="debt-${x.id}">
+   <button class="debt-head" onclick="toggleDebtDetail('${x.id}')">
+    <div class="debt-main"><div class="debt-name">${esc(x.name||x.type)}</div><div class="muted small">${esc(x.type)}｜利率 ${Number(x.rate||0)}%｜剩 ${Number(x.terms||0)} 期</div></div>
+    <div class="debt-right"><div class="debt-balance">${fmt(x.amount)}</div><span class="debt-pill ${statusClass}">${statusText}</span></div>
+   </button>
+   <div class="debt-bar"><i style="width:${Math.max(0,Math.min(100,pct))}%"></i></div>
+   <div class="debt-bar-note muted small">本期 ${fmt(paid)} / ${fmt(due)}${rem>0?`，尚欠 ${fmt(rem)}`:''}${x.due?`｜下期 ${esc(x.due)}`:''}</div>
+   <div class="debt-detail">
+    <div class="detail-list"><div class="detail-row"><span class="label">每期約</span><span class="value">${fmt(debtPayment(x))}</span></div><div class="detail-row"><span class="label">本期應繳</span><span class="value">${fmt(due)}</span></div><div class="detail-row"><span class="label">本期已繳</span><span class="value">${fmt(paid)}</span></div><div class="detail-row ${rem>0&&days<0?'bad':rem>0&&days<=7?'warn':''}"><span class="label">本期尚欠</span><span class="value">${fmt(rem)}</span></div><div class="detail-row"><span class="label">下期繳費</span><span class="value">${esc(x.due||'未設定')}</span></div>${x.note?`<div class="detail-row"><span class="label">備註</span><span class="value">${esc(x.note)}</span></div>`:''}</div>
+    <div class="actions"><button class="tiny edit" onclick="openDebt('${x.id}')">編輯</button><button class="tiny pay" onclick="openPay('${x.id}')">繳費</button><button class="tiny delete" onclick="deleteDebt('${x.id}')">刪除</button></div>
+   </div>
+  </div>`}).join('')}
 function renderAssets(){$('assetList').innerHTML=state.assets.length?state.assets.map(x=>`<div class="item"><div class="item-head"><div><div class="item-title">${esc(x.name||x.type)}</div></div><div class="item-amount">${fmt(x.amount)}</div></div><div class="detail-list"><div class="detail-row"><span class="label">類型</span><span class="value">${esc(x.type)}</span></div><div class="detail-row"><span class="label">可用資產</span><span class="value">${x.available===false?'不計入':'計入'}</span></div></div><div class="actions"><button class="tiny edit" onclick="openAsset('${x.id}')">編輯</button><button class="tiny delete" onclick="deleteAsset('${x.id}')">刪除</button></div></div>`).join(''):'<div class="empty solid-empty">尚未新增資產</div>'}
 function renderGoals(){$('goalList').innerHTML=state.goals.length?state.goals.map(x=>{const p=Math.min(100,Math.round(Number(x.current||0)/Math.max(1,Number(x.target||1))*100)),txs=state.transactions.filter(t=>t.type==='saving'&&String(t.goalId)===String(x.id)).sort((a,b)=>(b.date||'').localeCompare(a.date||'')),last=txs[0]?.date||'尚無存款紀錄';return `<div class="item"><div class="item-head"><div><div class="item-title">${esc(x.name)}</div></div><div class="item-amount">${p}%</div></div><div class="detail-list"><div class="detail-row"><span class="label">目前已存</span><span class="value">${fmt(x.current)}</span></div><div class="detail-row"><span class="label">目標金額</span><span class="value">${fmt(x.target)}</span></div><div class="detail-row"><span class="label">還差</span><span class="value">${fmt(Math.max(0,x.target-x.current))}</span></div><div class="detail-row"><span class="label">目標日期</span><span class="value">${esc(x.date||'未設定')}</span></div><div class="detail-row"><span class="label">累積存款筆數</span><span class="value">${txs.length} 筆</span></div><div class="detail-row"><span class="label">最近一次存款</span><span class="value">${esc(last)}</span></div></div><div class="actions"><button class="tiny edit" onclick="openGoal('${x.id}')">編輯</button><button class="tiny delete" onclick="deleteGoal('${x.id}')">刪除</button></div></div>`}).join(''):'<div class="empty solid-empty">尚未新增存錢目標</div>'}
 function openDebt(id=''){const x=state.debts.find(y=>String(y.id)===String(id));$('debtId').value=x?.id||'';fillTypeSelect('debtType',state.debtTypes,x?.type||'信貸');$('debtName').value=x?.name||'';$('debtAmount').value=x?.amount||'';$('debtRate').value=x?.rate||'';$('debtTerms').value=x?.terms||'';$('debtPayment').value=x?.payment||'';$('debtCurrentDue').value=x?debtCurrentDue(x):'';$('debtCurrentPaid').value=x?.currentPaid||0;$('debtDue').value=x?.due||'';$('debtNote').value=x?.note||'';openModal('debtModal')}
@@ -107,7 +129,7 @@ function deleteTransaction(id){const x=state.transactions.find(y=>String(y.id)==
  if(x.systemGenerated){if(!confirm('這筆由財務繳款自動產生。刪除記帳不會還原負債繳款紀錄，仍要刪除嗎？'))return;removeTransactionReceipt(x);state.transactions=state.transactions.filter(y=>String(y.id)!==String(id));save();return}
  if(confirm('刪除這筆記帳？')){reverseTransaction(x);removeTransactionReceipt(x);state.transactions=state.transactions.filter(y=>String(y.id)!==String(id));save()}}
 function setLedgerFilter(f,btn){ledgerFilter=f;document.querySelectorAll('.ledger-toolbar .chip').forEach(x=>x.classList.remove('active'));btn.classList.add('active');renderLedger()}
-function renderLedger(){const t=today(),m=t.slice(0,7),sum=(type,prefix)=>state.transactions.filter(x=>x.type===type&&x.date?.startsWith(prefix)).reduce((s,x)=>s+Number(x.amount||0),0);$('todayIncome').textContent=fmt(sum('income',t));$('todayExpense').textContent=fmt(sum('expense',t));$('todaySaving').textContent=fmt(sum('saving',t));$('monthIncome').textContent=fmt(sum('income',m));$('monthExpense').textContent=fmt(sum('expense',m));$('monthSaving').textContent=fmt(sum('saving',m));const q=$('txSearch').value.trim().toLowerCase();let xs=[...state.transactions].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||String(b.id).localeCompare(String(a.id)));if(ledgerFilter!=='all')xs=xs.filter(x=>x.type===ledgerFilter);if(q)xs=xs.filter(x=>(x.category+' '+x.note+' '+x.amount).toLowerCase().includes(q));$('transactionList').innerHTML=xs.length?xs.map(x=>{const isTransfer=x.type==='transfer',sub=isTransfer?`${accountLabel(x.fromAccountId)} → ${accountLabel(x.toAccountId)}`:esc(x.date)+(x.note?'｜'+esc(x.note):'')+(x.systemGenerated?'｜由財務繳款自動產生':'');return `<div class="transaction"><div><strong>${esc(x.category)}</strong><div class="muted small">${isTransfer?esc(x.date)+'｜'+sub+(x.note?'｜'+esc(x.note):''):sub}</div></div><div style="text-align:right"><strong class="${x.type}">${x.type==='income'?'+':x.type==='transfer'?'⇄':'-'}${fmt(x.amount)}</strong><div class="actions" style="justify-content:flex-end"><button class="tiny edit" onclick="openTransaction('${x.id}')">編輯</button><button class="tiny delete" onclick="deleteTransaction('${x.id}')">刪除</button></div></div></div>`}).join(''):'<div class="empty">尚無記帳資料</div>'}
+function renderLedger(){renderLedgerSummary();const q=$('txSearch').value.trim().toLowerCase();let xs=[...state.transactions].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||String(b.id).localeCompare(String(a.id)));if(ledgerFilter!=='all')xs=xs.filter(x=>x.type===ledgerFilter);if(q)xs=xs.filter(x=>(x.category+' '+x.note+' '+x.amount).toLowerCase().includes(q));$('transactionList').innerHTML=xs.length?renderTransactionGroups(xs):'<div class="empty">尚無記帳資料</div>'}
 function openCategoryManager(){renderCategoryManager();openModal('categoryModal')}
 function renderCategoryManager(){const type=$('catType').value,cats=state.categories[type]||[],defs=state.categoryDefaults[type]||{},accOpts=accountOptionsList();const accSelect=(field,cur)=>`<option value="">未設定</option>`+accOpts.map(o=>`<option value="${o.value}" ${cur===o.value?'selected':''}>${esc(o.label)}</option>`).join('');$('categoryList').innerHTML=cats.length?cats.map((c,i)=>{const def=defs[c]||{},enc=encodeURIComponent(c);const defaultsHtml=type==='transfer'?`<div class="cat-default-row"><label class="tiny-label">預設轉出</label><select onchange="setCategoryDefault('${type}','${enc}','from',this.value)">${accSelect('from',def.from)}</select><label class="tiny-label">預設轉入</label><select onchange="setCategoryDefault('${type}','${enc}','to',this.value)">${accSelect('to',def.to)}</select></div>`:`<div class="cat-default-row"><label class="tiny-label">預設帳戶</label><select onchange="setCategoryDefault('${type}','${enc}','accountId',this.value)">${accSelect('accountId',def.accountId)}</select></div>`;return `<div class="item cat-item"><div class="item-head"><strong>${esc(c)}</strong><div class="actions"><button class="tiny" ${i===0?'disabled':''} onclick="moveCategory('${type}','${enc}',-1)">▲</button><button class="tiny" ${i===cats.length-1?'disabled':''} onclick="moveCategory('${type}','${enc}',1)">▼</button><button class="tiny delete" onclick="deleteCategory('${type}','${enc}')">刪除</button></div></div>${defaultsHtml}</div>`}).join(''):'<div class="empty">尚無類別</div>'}
 function addCategory(){const type=$('catType').value,name=$('newCategory').value.trim();if(!name)return;if(!state.categories[type].includes(name))state.categories[type].push(name);$('newCategory').value='';save();renderCategoryManager()}
@@ -529,6 +551,94 @@ function relapseResisted(){closeRelapseFlow();notify('你忍住了，這次不�
 function relapseNextReason(){setRelapseStep(2);setTimeout(()=>$('relapseReasonInput').focus(),100)}
 function relapseNextLoss(){const reason=$('relapseReasonInput').value.trim();if(!reason)return notify('請填寫復賭原因');relapseDraft.reason=reason;const opts=[...state.assets.map(a=>`<option value="asset:${a.id}">資產｜${esc(a.name||a.type)}（${fmt(a.amount)}）</option>`),...state.debts.map(d=>`<option value="debt:${d.id}">負債｜${esc(d.name||d.type)}（${fmt(d.amount)}）</option>`)];$('relapseSourceSelect').innerHTML='<option value="">不連動帳戶或負債</option>'+opts.join('');setRelapseStep(3);setTimeout(()=>$('relapseLossInput').focus(),100)}
 function finishRelapseFlow(){const raw=$('relapseLossInput').value;if(raw===''||!/^\d+(\.\d+)?$/.test(raw))return notify('請輸入本次損失金額');const loss=Number(raw);if(!Number.isFinite(loss)||loss<0)return notify('請輸入正確數字');const source=$('relapseSourceSelect').value;const streak=currentStreak();state.relapses.push({id:uid(),date:today(),reason:relapseDraft.reason,loss,streak});state.best=Math.max(state.best||0,streak);state.checkins=[];state.journals.push({id:uid(),date:today(),mood:'很痛苦',urge:'復賭',text:`今天因為「${relapseDraft.reason}」，沒有控制住自己。\n\n這次共損失 ${fmt(loss)}。\n\n雖然今天跌倒了，但我願意誠實記錄，代表我沒有放棄。一次復賭不代表永遠失敗，我仍然可以重新開始。`});if(loss>0){const tx={id:uid(),type:'expense',date:today(),category:'復賭',amount:loss,accountId:source,goalId:'',importance:3,note:`復賭－${relapseDraft.reason}`,receipt:'',systemGenerated:true,relapseGenerated:true,syncApplied:true};applyTransaction(tx);state.transactions.push(tx)}save();closeRelapseFlow();notify('已記錄。滑倒了沒關係，重新開始')}
+
+/* ===== V13.29：財務總覽與記帳的可讀性改版 ===== */
+let debtSort=localStorage.getItem('restart-debt-sort')||'due';
+let debtFilter='all';
+function setDebtSort(v){debtSort=v;try{localStorage.setItem('restart-debt-sort',v)}catch(e){}renderDebts()}
+function setDebtFilter(v,el){debtFilter=v;[...document.querySelectorAll('#debtFilters .chip')].forEach(b=>b.classList.toggle('active',b===el));renderDebts()}
+function toggleDebtDetail(id){const el=$('debt-'+id);if(el)el.classList.toggle('open')}
+
+// 一眼看懂現在的財務狀況：淨資產、本月繳款進度、付不付得出來、負債組成。
+function renderSnapshot(t){
+ const el=$('financeSnapshot');if(!el)return;
+ t=t||totals();
+ const net=t.assets-t.debt;
+ const due=state.debts.reduce((s,x)=>s+debtCurrentDue(x),0);
+ const paid=state.debts.reduce((s,x)=>s+Math.min(Number(x.currentPaid||0),debtCurrentDue(x)),0);
+ const remain=state.debts.reduce((s,x)=>s+debtCurrentRemaining(x),0);
+ const pct=due>0?Math.round(paid/due*100):100;
+ const unpaid=state.debts.filter(x=>debtCurrentRemaining(x)>0);
+ const overdue=state.debts.filter(x=>debtIsOverdue(x));
+ const overdueSum=overdue.reduce((s,x)=>s+debtCurrentRemaining(x),0);
+ const week=state.debts.filter(x=>debtCurrentRemaining(x)>0&&x.due&&dateDiff(x.due)>=0&&dateDiff(x.due)<=7).reduce((s,x)=>s+debtCurrentRemaining(x),0);
+ const gap=t.assets-remain;
+ let verdict,tone;
+ if(overdue.length){tone='bad';verdict=`有 ${overdue.length} 筆已逾期，合計 ${fmt(overdueSum)}，建議優先處理這幾筆。`}
+ else if(!state.debts.length){tone='ok';verdict='目前沒有負債，維持現在的節奏就好。'}
+ else if(remain<=0){tone='ok';verdict='本月款項都已繳清，接下來專心存錢。'}
+ else if(gap>=0){tone='ok';verdict=`可用資產付完本月剩餘的 ${fmt(remain)} 後，還會剩下 ${fmt(gap)}。`}
+ else{tone='warn';verdict=`可用資產不足以付完本月剩餘款項，還差 ${fmt(Math.abs(gap))}。`}
+ const colors=['#ef7b5d','#3178d5','#d49a2a','#2f9b70','#9a86d8'];
+ const sorted=[...state.debts].filter(x=>Number(x.amount||0)>0).sort((a,b)=>Number(b.amount||0)-Number(a.amount||0));
+ const top=sorted.slice(0,4);
+ const otherSum=sorted.slice(4).reduce((s,x)=>s+Number(x.amount||0),0);
+ const parts=top.map((x,i)=>({name:x.name||x.type,amount:Number(x.amount||0),color:colors[i]}));
+ if(otherSum>0)parts.push({name:`其他 ${sorted.length-4} 筆`,amount:otherSum,color:colors[4]});
+ const composition=t.debt>0?`<div class="snap-block"><div class="snap-label">負債組成</div><div class="stack-bar">${parts.map(p=>`<i style="width:${(p.amount/t.debt*100).toFixed(1)}%;background:${p.color}"></i>`).join('')}</div><div class="stack-legend">${parts.map(p=>`<span><i style="background:${p.color}"></i>${esc(p.name)}　${fmt(p.amount)}（${Math.round(p.amount/t.debt*100)}%）</span>`).join('')}</div></div>`:'';
+ el.innerHTML=`<div class="card snapshot">
+  <div class="snap-top">
+   <div class="snap-net"><small>淨資產（資產 − 負債）</small><strong class="${net<0?'bad-text':'good-text'}">${fmt(net)}</strong></div>
+   <div class="snap-side"><div><small>可用資產</small><b>${fmt(t.assets)}</b></div><div><small>總負債</small><b>${fmt(t.debt)}</b></div></div>
+  </div>
+  <div class="snap-block">
+   <div class="snap-label">本月繳款進度 <span class="muted small">${fmt(paid)} / ${fmt(due)}（${pct}%）</span></div>
+   <div class="snap-bar"><i class="${overdue.length?'bad':''}" style="width:${Math.max(0,Math.min(100,pct))}%"></i></div>
+   <div class="snap-sub muted small">尚欠 ${fmt(remain)}，${unpaid.length} 筆未繳清${week>0?`｜7 天內要繳 ${fmt(week)}`:''}</div>
+  </div>
+  <div class="snap-verdict ${tone}">${esc(verdict)}</div>
+  ${composition}
+ </div>`;
+}
+
+// 記帳頁改成「本月還剩多少」與支出分類排行，取代原本六宮格。
+function renderLedgerSummary(){
+ const el=$('ledgerSummary');if(!el)return;
+ const t=today(),m=t.slice(0,7);
+ const sum=(type,prefix)=>state.transactions.filter(x=>x.type===type&&x.date?.startsWith(prefix)).reduce((s,x)=>s+Number(x.amount||0),0);
+ const inc=sum('income',m),exp=sum('expense',m),sav=sum('saving',m),net=inc-exp-sav;
+ const todayExp=sum('expense',t),todayCount=state.transactions.filter(x=>x.date===t&&x.type!=='transfer').length;
+ const used=inc>0?Math.min(100,Math.round((exp+sav)/inc*100)):0;
+ const byCat={};
+ state.transactions.filter(x=>x.type==='expense'&&x.date?.startsWith(m)).forEach(x=>{const k=x.category||'未分類';byCat[k]=(byCat[k]||0)+Number(x.amount||0)});
+ const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]).slice(0,5);
+ const maxCat=cats.length?cats[0][1]:0;
+ const catHtml=cats.length?`<div class="snap-block"><div class="snap-label">本月支出前 ${cats.length} 名</div>${cats.map(([name,v])=>`<div class="cat-row"><div class="cat-name">${esc(name)}</div><div class="cat-bar"><i style="width:${maxCat?Math.round(v/maxCat*100):0}%"></i></div><div class="cat-value">${fmt(v)}<span class="muted small">　${exp?Math.round(v/exp*100):0}%</span></div></div>`).join('')}</div>`:'';
+ el.innerHTML=`<div class="card snapshot">
+  <div class="snap-top">
+   <div class="snap-net"><small>本月結餘（收入 − 支出 − 存款）</small><strong class="${net<0?'bad-text':'good-text'}">${fmt(net)}</strong></div>
+  </div>
+  <div class="ledger-figures"><div><small>收入</small><b class="income">${fmt(inc)}</b></div><div><small>支出</small><b class="expense">${fmt(exp)}</b></div><div><small>存款</small><b class="saving">${fmt(sav)}</b></div></div>
+  ${inc>0?`<div class="snap-block"><div class="snap-label">收入已用掉 <span class="muted small">${used}%</span></div><div class="snap-bar"><i class="${used>100?'bad':used>80?'warn':''}" style="width:${used}%"></i></div></div>`:''}
+  <div class="snap-sub muted small">今天支出 ${fmt(todayExp)}${todayCount?`，共 ${todayCount} 筆`:'，還沒有記帳'}</div>
+  ${catHtml}
+ </div>`;
+}
+
+// 交易列表依日期分組，每天顯示小計，長清單比較好掃。
+function renderTransactionGroups(xs){
+ const weekday=['日','一','二','三','四','五','六'];
+ const groups=[];
+ xs.forEach(x=>{const d=x.date||'';const last=groups[groups.length-1];if(last&&last.date===d)last.items.push(x);else groups.push({date:d,items:[x]})});
+ return groups.map(g=>{
+  const net=g.items.reduce((s,x)=>x.type==='income'?s+Number(x.amount||0):x.type==='transfer'?s:s-Number(x.amount||0),0);
+  let label=g.date;
+  if(g.date){const dt=new Date(g.date+'T00:00:00');if(!isNaN(dt))label=`${dt.getMonth()+1}/${dt.getDate()}（${weekday[dt.getDay()]}）`;if(g.date===today())label='今天 '+label}
+  return `<div class="tx-day"><div class="tx-day-head"><span>${esc(label)}</span><span class="${net<0?'expense':'income'}">${net<0?'-':'+'}${fmt(Math.abs(net))}</span></div>${g.items.map(x=>{
+   const isTransfer=x.type==='transfer';
+   const sub=isTransfer?`${accountLabel(x.fromAccountId)} → ${accountLabel(x.toAccountId)}`:[x.accountId?accountLabel(x.accountId):'',x.note||'',x.systemGenerated?'自動產生':''].filter(Boolean).map(esc).join('｜');
+   return `<div class="transaction"><div><strong>${esc(x.category)}</strong>${sub?`<div class="muted small">${sub}</div>`:''}</div><div style="text-align:right"><strong class="${x.type}">${x.type==='income'?'+':x.type==='transfer'?'⇄':'-'}${fmt(x.amount)}</strong><div class="actions" style="justify-content:flex-end"><button class="tiny edit" onclick="openTransaction('${x.id}')">編輯</button><button class="tiny delete" onclick="deleteTransaction('${x.id}')">刪除</button></div></div></div>`}).join('')}</div>`}).join('');
+}
 
 window.RestartApp={
   getState:()=>state,

@@ -975,3 +975,56 @@ body.square-keyboard-open .square-sheet{height:100dvh!important;grid-template-ro
 .cat-default-row .tiny-label{font-size:.8rem;color:var(--muted);font-weight:800;white-space:nowrap}
 .cat-default-row select{flex:1;min-width:120px;height:40px;min-height:40px;max-height:40px;font-size:.85rem}
 #transferFields{display:flex;flex-direction:column;gap:0}
+
+
+/* V13.29 財務快照、負債清單與記帳摘要 */
+.snapshot{padding:16px}
+.snap-top{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:12px;align-items:center}
+.snap-net small,.snap-side small{display:block;color:var(--muted);font-size:.85rem}
+.snap-net strong{display:block;font-size:clamp(1.6rem,7vw,2.1rem);font-weight:950;line-height:1.1;margin-top:4px;overflow-wrap:anywhere}
+.good-text{color:var(--good)}.bad-text{color:var(--bad)}
+.snap-side{display:grid;gap:8px}
+.snap-side>div{background:#f5f7f5;border:1px solid var(--line);border-radius:13px;padding:8px 10px}
+.snap-side b{display:block;font-size:1.02rem;margin-top:2px;overflow-wrap:anywhere}
+.snap-block{margin-top:14px}
+.snap-label{font-weight:850;margin-bottom:7px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.snap-bar{height:11px;border-radius:999px;background:#eceeec;overflow:hidden}
+.snap-bar i{display:block;height:100%;background:var(--good);border-radius:999px;transition:width .3s}
+.snap-bar i.warn{background:var(--warn)}.snap-bar i.bad{background:var(--bad)}
+.snap-sub{margin-top:7px}
+.snap-verdict{margin-top:13px;padding:12px 14px;border-radius:14px;background:#f4f7f5;border-left:5px solid var(--good);font-weight:800;line-height:1.55}
+.snap-verdict.warn{background:#fff8ea;border-color:var(--warn)}
+.snap-verdict.bad{background:#fff0f1;border-color:var(--bad)}
+.stack-bar{display:flex;height:16px;border-radius:999px;overflow:hidden;background:#eceeec}
+.stack-bar i{display:block;height:100%}
+.stack-legend{display:flex;flex-direction:column;gap:5px;margin-top:9px;font-size:.86rem}
+.stack-legend span{display:flex;align-items:center;gap:7px}
+.stack-legend i{width:10px;height:10px;border-radius:3px;flex:0 0 auto}
+.list-toolbar{display:flex;gap:9px;align-items:center;justify-content:space-between;margin-bottom:11px;flex-wrap:wrap}
+.chip-row{display:flex;gap:7px;overflow:auto}
+.list-toolbar select{height:40px;border:1px solid var(--line);background:#fff;border-radius:999px;padding:0 32px 0 13px;font:inherit;font-weight:800;-webkit-appearance:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,#3178d5 50%),linear-gradient(135deg,#3178d5 50%,transparent 50%);background-position:calc(100% - 16px) 17px,calc(100% - 11px) 17px;background-size:6px 6px,6px 6px;background-repeat:no-repeat}
+.debt-row{background:#fff;border:1px solid var(--line);border-radius:17px;padding:13px;margin-bottom:10px}
+.debt-row.warn{border-color:#f0cf8f}.debt-row.bad{border-color:#efb0b6;background:#fff8f8}
+.debt-head{width:100%;border:0;background:transparent;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:flex-start;text-align:left;padding:0;color:inherit;font:inherit}
+.debt-name{font-weight:900;font-size:1.08rem}
+.debt-right{text-align:right}
+.debt-balance{font-weight:950;font-size:1.25rem;white-space:nowrap}
+.debt-pill{display:inline-block;margin-top:4px;border-radius:999px;padding:3px 9px;font-size:.78rem;font-weight:850;background:#eef1ef;color:var(--muted)}
+.debt-pill.ok{background:#edf8f1;color:#287657}.debt-pill.warn{background:#fff6e6;color:#8a6111}.debt-pill.bad{background:#fdecef;color:#b23f49}
+.debt-bar{height:7px;border-radius:999px;background:#eceeec;overflow:hidden;margin-top:11px}
+.debt-bar i{display:block;height:100%;background:var(--good)}
+.debt-bar-note{margin-top:6px}
+.debt-detail{display:none}
+.debt-row.open .debt-detail{display:block}
+.ledger-figures{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:13px}
+.ledger-figures>div{background:#f5f7f5;border:1px solid var(--line);border-radius:13px;padding:9px 10px;min-width:0}
+.ledger-figures small{display:block;color:var(--muted);font-size:.84rem}
+.ledger-figures b{display:block;margin-top:3px;font-size:1rem;overflow-wrap:anywhere}
+.cat-row{display:grid;grid-template-columns:minmax(58px,22%) 1fr auto;gap:9px;align-items:center;margin-bottom:8px;font-size:.9rem}
+.cat-name{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cat-bar{height:9px;border-radius:999px;background:#eceeec;overflow:hidden}
+.cat-bar i{display:block;height:100%;background:var(--primary);border-radius:999px}
+.cat-value{font-weight:850;white-space:nowrap}
+.tx-day{margin-bottom:6px}
+.tx-day-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0 7px;font-weight:850;border-bottom:2px solid var(--line);background:var(--card)}
+@media(max-width:640px){.snap-top{grid-template-columns:1fr}.snap-side{grid-template-columns:1fr 1fr}.cat-row{grid-template-columns:minmax(52px,26%) 1fr auto}}

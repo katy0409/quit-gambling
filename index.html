@@ -9,7 +9,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Restart V13.16｜功能整合修正版</title>
-<link rel="stylesheet" href="css/app.css?v=13.28">
+<link rel="stylesheet" href="css/app.css?v=13.29">
 </head>
 <body class="auth-pending">
 <div id="authGate" class="auth-gate">
@@ -30,7 +30,7 @@
     <button type="button" id="lineLoginBtn" class="social-btn line-login"><span class="social-icon line-icon">LINE</span><span>使用 LINE 登入</span></button>
     <p class="auth-security-note">🔒 App 不會明碼保存密碼；密碼自動填入由手機鑰匙圈或瀏覽器密碼管理器處理。</p>
     <button type="button" id="offlineEnterBtn" class="btn ghost wide hidden" style="margin-top:10px">先離線使用（資料只存在這支手機）</button>
-    <p class="muted small" style="text-align:center;margin-bottom:6px">V13.28 支援 Email、Google 登入。暫不支援 LINE 登入。</p><button type="button" class="admin-login-link" onclick="openAdminLogin()">管理者入口</button>
+    <p class="muted small" style="text-align:center;margin-bottom:6px">V13.29 支援 Email、Google 登入。暫不支援 LINE 登入。</p><button type="button" class="admin-login-link" onclick="openAdminLogin()">管理者入口</button>
   </div>
 </div>
 
@@ -53,20 +53,21 @@
 </section>
 <section id="finance" class="page">
   <h1 class="title">財務總覽</h1>
-  <div class="finance-summary"><div class="metric primary-money"><small>總負債</small><strong id="finDebt">NT$0</strong></div><div class="metric"><small>可用資產</small><strong id="finAsset">NT$0</strong></div><div class="metric"><small>本月應繳</small><strong id="finDue">NT$0</strong></div></div>
+  <div id="financeSnapshot"></div>
   <div class="card health"><div id="healthRing" class="ring" style="--score:0"><strong id="healthScore">0</strong></div><div><h2 id="healthLabel" style="margin:0 0 6px">尚未評估</h2><div id="healthText" class="muted"></div></div></div>
   <div class="section-head"><h2>現金流預估</h2></div>
   <div class="card forecast-card cashflow-card"><h3>從今天撐到下次領薪</h3><div class="field"><label>預計薪資</label><input id="fcCurrentSalary" type="number" inputmode="numeric"></div><div class="field"><label>下次領薪日</label><input id="fcCurrentSalaryDate" type="date"></div><button class="btn primary wide" onclick="saveForecast('current')">儲存現金流預估</button><div id="fcCurrentResult" class="forecast-result"></div></div>
   <div class="section-head"><h2>提醒、風險與建議</h2><button onclick="openAnalysis()">圖表分析</button></div><div id="financeAlerts" class="alert-list"></div>
   <div class="section-head"><h2>近期需繳款</h2></div><div id="upcomingList" class="upcoming"></div>
-  <div class="section-head"><h2>負債狀況</h2><button onclick="openDebt()">＋新增</button></div><div id="debtList"></div>
+  <div class="section-head"><h2>負債狀況</h2><button onclick="openDebt()">＋新增</button></div>
+  <div class="list-toolbar"><div id="debtFilters" class="chip-row"><button class="chip active" onclick="setDebtFilter('all',this)">全部</button><button class="chip" onclick="setDebtFilter('unpaid',this)">本期未繳清</button><button class="chip" onclick="setDebtFilter('overdue',this)">已逾期</button></div><select id="debtSort" onchange="setDebtSort(this.value)" aria-label="負債排序"><option value="due">依到期日</option><option value="amount">依餘額（高→低）</option><option value="rate">依利率（高→低）</option><option value="small">依餘額（低→高）</option></select></div>
+  <div id="debtList"></div>
   <div class="section-head"><h2>資產現況</h2><button onclick="openAsset()">＋新增</button></div><div id="assetList"></div>
   <div class="section-head"><h2>存錢目標</h2><button onclick="openGoal()">＋新增</button></div><div id="goalList"></div>
 </section>
 <section id="ledger" class="page">
   <h1 class="title">記帳</h1>
-  <div class="grid3"><div class="metric"><small>今日收入</small><strong id="todayIncome">NT$0</strong></div><div class="metric"><small>今日支出</small><strong id="todayExpense">NT$0</strong></div><div class="metric"><small>今日存款</small><strong id="todaySaving">NT$0</strong></div></div>
-  <div class="grid3" style="margin-top:10px"><div class="metric"><small>本月收入</small><strong id="monthIncome">NT$0</strong></div><div class="metric"><small>本月支出</small><strong id="monthExpense">NT$0</strong></div><div class="metric"><small>本月存款</small><strong id="monthSaving">NT$0</strong></div></div>
+  <div id="ledgerSummary"></div>
   <div class="card" style="margin-top:14px"><div class="search-row"><input id="txSearch" placeholder="搜尋分類、備註或金額" oninput="renderLedger()"><button class="btn ghost" onclick="openCategoryManager()">管理類別</button></div></div>
   <div class="ledger-toolbar"><button class="chip active" data-filter="all" onclick="setLedgerFilter('all',this)">全部</button><button class="chip" data-filter="income" onclick="setLedgerFilter('income',this)">收入</button><button class="chip" data-filter="expense" onclick="setLedgerFilter('expense',this)">支出</button><button class="chip" data-filter="saving" onclick="setLedgerFilter('saving',this)">存款</button><button class="chip" data-filter="transfer" onclick="setLedgerFilter('transfer',this)">轉帳</button></div>
   <div id="transactionList" class="card"></div>
@@ -148,16 +149,16 @@
 <div id="analysisModal" class="modal analysis-modal"><div class="sheet analysis-sheet"><div class="sheet-head"><div><h2>圖表分析</h2><div class="small muted">依目前財務、記帳、戒賭與日記資料整理</div></div><button class="close" onclick="closeModal('analysisModal')">×</button></div><div class="sheet-body"><div class="analysis-tabs"><button class="active" onclick="renderAnalysis('all',this)">全部</button><button onclick="renderAnalysis('finance',this)">財務</button><button onclick="renderAnalysis('ledger',this)">記帳</button><button onclick="renderAnalysis('recovery',this)">戒賭</button><button onclick="renderAnalysis('mood',this)">心情</button><button onclick="renderAnalysis('cross',this)">交叉分析</button></div><div id="analysisCharts" class="analysis-charts"></div><section class="analysis-insight-section"><h3>分析重點</h3><div id="analysisInsights" class="analysis-insights"></div></section></div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-<script src="js/supabase-config.js?v=13.28"></script>
-<script src="js/core-v14.js?v=13.28"></script>
-<script src="js/cloud-settings.js?v=13.28"></script>
-<script src="js/auth.js?v=13.28"></script>
-<script src="js/sos-quotes.js?v=13.28"></script>
-<script src="js/app.js?v=13.28"></script>
-<script src="js/avatar-v123.js?v=13.28"></script>
-<script src="js/square-v13.js?v=13.28"></script>
-<script src="js/feedback-v133.js?v=13.28"></script>
-<script src="js/admin-v134.js?v=13.28"></script><script src="js/square-chat-v1315.js?v=13.28"></script>
-<script src="js/wallet-v135.js?v=13.28"></script>
-<script src="js/daily-v135.js?v=13.28"></script>
+<script src="js/supabase-config.js?v=13.29"></script>
+<script src="js/core-v14.js?v=13.29"></script>
+<script src="js/cloud-settings.js?v=13.29"></script>
+<script src="js/auth.js?v=13.29"></script>
+<script src="js/sos-quotes.js?v=13.29"></script>
+<script src="js/app.js?v=13.29"></script>
+<script src="js/avatar-v123.js?v=13.29"></script>
+<script src="js/square-v13.js?v=13.29"></script>
+<script src="js/feedback-v133.js?v=13.29"></script>
+<script src="js/admin-v134.js?v=13.29"></script><script src="js/square-chat-v1315.js?v=13.29"></script>
+<script src="js/wallet-v135.js?v=13.29"></script>
+<script src="js/daily-v135.js?v=13.29"></script>
 </body></html>
